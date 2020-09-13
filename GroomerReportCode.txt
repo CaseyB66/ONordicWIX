@@ -3,8 +3,11 @@ import wixData from 'wix-data';
 import wixSearch from 'wix-search';
 
 let _trailList = []
+let _winHt=0;
+let _winWid=0;
 
 $w.onReady(function () {
+	$w('#scrnResltnTxt').hide();
 	$w('#hiddenGroomRptLgnd').hide();
 	let tbllgndhtml = '<p style="background-color:rgb(230,200,200);color:rgb(0,0,0);border: 2px solid red;\
   border-radius: 8px;padding: 10px;">';
@@ -71,8 +74,14 @@ function buildGrmRptTable(srtRws) {
 	let fntszfull = "width:100%;font-size:12px";
 	let fntszsimple = "width:60%;font-size:18px";
 	if (wixWindow.formFactor === "Mobile" || wixWindow.formFactor === "Tablet") {
-		fntszfull = "width:100%;font-size:8px";
-		fntszsimple = "width:100%;font-size:12px";
+		if (_winWid>_winHt){
+			fntszfull = "width:100%;font-size:5px";
+			fntszsimple = "width:100%;font-size:9px";
+		}
+		else{
+			fntszfull = "width:100%;font-size:8px";
+			fntszsimple = "width:100%;font-size:12px";
+		}
 	}
 	if (ndx.length > 0 && ndx[0] === 0) {
 		fullRpt = true;
@@ -156,6 +165,17 @@ async function fillGrmRptTbl() {
 		hour: '2-digit',
 		minute: '2-digit'
 	};
+	let wininfo = await wixWindow.getBoundingRect();
+	_winHt=wininfo.window.height;
+	_winWid=wininfo.window.width;
+	let tbllgndhtml = '<p style="background-color:rgb(230,200,200);color:rgb(0,0,0);border: 2px solid red;\
+  border-radius: 8px;padding: 1px;">';
+	tbllgndhtml = tbllgndhtml.concat('<br>Ht: '+_winHt+'</br>')
+	tbllgndhtml = tbllgndhtml.concat('<br>Wid: '+_winWid+'</br>')
+	tbllgndhtml = tbllgndhtml.concat("</p>")
+	$w('#scrnResltnTxt').html=tbllgndhtml;
+	// $w('#scrnResltnTxt').show();
+	
 	var today = new Date();
 	var time_ms = today.getTime();
 	let hrs = $w('#grmRptHours').value;
@@ -170,7 +190,6 @@ async function fillGrmRptTbl() {
 			.ge("groomDate", fltrDate)
 			.find();
 		var trlDnItems = results.items;
-		console.log("fillgrmRptTable #items " + trlDnItems.length + "; trail " + trlDnItems[0]["trailRef"]["title"] + "; groomer " + trlDnItems[0]["groomerRef"]["title"])
 		let newRws = []
 
 		for (var j = 0; j < trlDnItems.length; j++) {
@@ -257,4 +276,11 @@ export function grmRptTable_click(event) {
 			$w('#hiddenGroomRptLgnd').hide("fade");
 		}
 	}
+}
+
+export function scrnResltnTxt_click(event) {
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here: 
+	$w('#scrnResltnTxt').hide();
+
 }
