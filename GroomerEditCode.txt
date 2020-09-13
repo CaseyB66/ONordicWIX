@@ -237,7 +237,7 @@ export function groomerPwdEdit_change(event) {
 		$w('#groomerPwdEdit').hide();
 
 		fillTrailsDoneTbl();
-
+		trailRgnDrpDn_change(null);
 		$w('#groomersDrpDn').disable().then( () => {
 			$w("#groomersDrpDn").style.backgroundColor = "rgb(255,0,0)";
 			$w("#groomersDrpDn").style.color = "rgb(50,50,50)";
