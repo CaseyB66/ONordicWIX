@@ -111,13 +111,12 @@ $w.onReady(function () {
 			"; vis " + trlsDnCols[i].visible)
 	}
 	$w('#trailsDoneTbl').columns = trlsDnCols;
-	trailConditionDrpDn_change(null)
 });
 
 function hideTrailLabels(){
 	for (var i=0;i<__nrEntryRows;i++){
 		let tmpStr=('#trGrp'+(i+1));
-		console.log("hideTrailLabels "+tmpStr)
+		// console.log("hideTrailLabels "+tmpStr)
 		$w(tmpStr).hide();
 	}
 }
@@ -299,6 +298,7 @@ function fillTrailConditionDropDn(){
 				let condxOpts = buildOptions(uniqueTitles);
 				$w('#trailConditionDrpDn').options = condxOpts;
 				$w('#trailConditionDrpDn').selectedIndex=0;
+				trailConditionDrpDn_change(null)
 			});
 }
 
@@ -343,11 +343,11 @@ async function fillTrailNameDrpDn(rgn) {
 		trllst+=_trailList[i].title+',';
 	}
 
-	console.log("fillTrailNameDrpDn for region"+rgn+trllst)
+	// console.log("fillTrailNameDrpDn for region"+rgn+trllst)
 	hideTrailLabels();
 	for (var i=0;i<_trailList.length;i++){
 		setTrailLabel(_trailList[i].title, i+1)
-		console.log("trailNameDrpDn trail item = " + + " currTrail "+_currTrailName)
+		// console.log("trailNameDrpDn trail item = " + + " currTrail "+_currTrailName)
 	}
 
 
@@ -440,8 +440,9 @@ export function trailConditionDrpDn_change(event) {
 	// Add your code for this event here: 
 	let tblrws = $w('#trailCondxTbl').rows;
 	let newelt = $w('#trailConditionDrpDn').value;
-	tblrws.push({'trail_conditions': newelt});	
-	console.log("addCondxBtn", newelt);
+	if (newelt.length>2)
+		tblrws.push({'trail_conditions': newelt});	
+	console.log("trailConditionDrpDn_change: newelt: "+newelt+"; newelt type: "+typeof(newelt));
 	$w('#trailCondxTbl').rows = tblrws;
 	if ($w('#trailCondxTbl').rows.length>0){
 		_setElmntsChng("Condx",true);
@@ -450,7 +451,7 @@ export function trailConditionDrpDn_change(event) {
 		_setElmntsChng("Condx",false);
 	}
 	_trailDataSubmit = 1;
-	console.log("trailCondxDrpDn setting Condx " + _getElmntsChng("Condx"))
+	// console.log("trailCondxDrpDn setting Condx " + _getElmntsChng("Condx"))
 	checkSubmit();
 }
 
