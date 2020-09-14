@@ -2,7 +2,7 @@
 import wixData from 'wix-data';
 import wixSearch from 'wix-search';
 
-const __nrEntryRows = 10;
+const __nrEntryRows = 12;
 
 var getKeys = function(obj){
    var keys = [];
@@ -66,13 +66,10 @@ function _getElmntsChng(thekey){
 }
 
 $w.onReady(function () {
-	$w('#trailSlctChk1').options[0].label="TrailName"
 	// TODO: write your page related code here...
 	fillTrailRgnDrpDn();
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
-	let htmltxt='<div style="font-size:14px;background-color:rgb(250,250,250)">'+"TrailTest"+'</div>'
-	$w('#trailLabel1').html=htmltxt;
 	$w('#removeTrailCondxBtn').disable();
 	$w('#trailCondxTbl').rows = []
 	var today = new Date();
@@ -121,12 +118,15 @@ function hideTrailLabels(){
 }
 
 function setTrailLabel(trStr,trNbr){
-	let htmltxt='<div style="font-size:14px;background-color:rgb(250,250,250)">'+trStr+'</div>'
 	let tmpStr = ('#trGrp'+trNbr);
 	console.log("setTrailLabel "+trStr+", trNbr: "+trNbr+", eval "+tmpStr)
 	$w(tmpStr).show();
-	tmpStr = '#trailLabel'+trNbr;
-	$w(tmpStr).html = htmltxt;
+	tmpStr = ('#trailLabel'+trNbr);
+	let trlOpts=$w(tmpStr).options;
+	trlOpts[0].label=trStr;
+	$w(tmpStr).options=trlOpts;
+	$w(tmpStr).selectedIndices=[0];
+
 }
 
 function enableEntryFields(_boolVal){
@@ -137,7 +137,7 @@ function enableEntryFields(_boolVal){
 		$w('#removeTrailCondxBtn').enable();
 		$w('#classicRadio1').enable();
 		$w('#submitBtn').enable();
-		$w('#groomMachRadio1').enable();
+		$w('#grmMachRadio1').enable();
 		$w('#commentEdit').enable();
 	}
 	else {
@@ -147,7 +147,7 @@ function enableEntryFields(_boolVal){
 		$w('#removeTrailCondxBtn').disable();
 		$w('#classicRadio1').disable();
 		$w('#submitBtn').disable();
-		$w('#groomMachRadio1').disable();
+		$w('#grmMachRadio1').disable();
 		$w('#commentEdit').disable();
 	}
 }
@@ -163,7 +163,7 @@ function clearEntryFields(){
 		_setElmntsChng("Condx", true);
 	}
 	_setElmntsChng("Mach", true);
-	if ($w('#groomMachRadio1').value != '0'){
+	if ($w('#grmMachRadio1').value != '0'){
 		_setElmntsChng("Mach", true);
 	}
 	_setElmntsChng("Classic", true);
@@ -524,12 +524,15 @@ export async function submitBtn_click(event) {
 	_saveTime = $w('#trailGroomTime').value;
 	let toInsert = {}
 	let grpStr=""
+	let trlStr=""
 	let clscRd=""
 	let grmrRd=""
 	let thisTrail=""
 	for (var i = 0; i < __nrEntryRows; i++) {
+		trlStr = ('#trailLabel'+(i+1));
 		grpStr = ('#trGrp' + (i + 1));
-		if (!$w(grpStr).hidden) {
+		let trlNdx=$w(trlStr).selectedIndices;
+		if (!$w(grpStr).hidden && (trlNdx.length>0)) {
 			if (i < _trailList.length) {
 				trailId = _trailList[i]._id
 				thisTrail = _trailList[i].title;
@@ -539,7 +542,7 @@ export async function submitBtn_click(event) {
 				break;
 			clscRd=('#classicRadio'+(i+1));
 			console.log("submitBtn: for "+thisTrail+"; using "+clscRd+"; classicSet " + $w(clscRd).value)
-			grmrRd=('#groomMachRadio'+(i+1))
+			grmrRd=('#grmMachRadio'+(i+1))
 			toInsert = {
 				"title": o.format(trlGrmDate),
 				"trailCondition": trlCndx,
@@ -607,7 +610,7 @@ export function groomMachRadioALL_change(event) {
 	for (var i=0;i<__nrEntryRows;i++){
 		let grpStr=('#trGrp'+(i+1));
 		if (!$w(grpStr).hidden){
-			let tmpStr = ('#groomMachRadio'+(i+1));
+			let tmpStr = ('#grmMachRadio'+(i+1));
 			console.log("groomMachRadioALL_change setting "+tmpStr+", to: "+curVal)
 			$w(tmpStr).value=curVal;
 		}
