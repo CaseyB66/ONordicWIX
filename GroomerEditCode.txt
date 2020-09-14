@@ -66,9 +66,9 @@ function _getElmntsChng(thekey){
 }
 
 $w.onReady(function () {
+	$w('#trailSlctChk1').options[0].label="TrailName"
 	// TODO: write your page related code here...
 	fillTrailRgnDrpDn();
-	fillTrailNameDrpDn("South");
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
 	let htmltxt='<div style="font-size:14px;background-color:rgb(250,250,250)">'+"TrailTest"+'</div>'
@@ -90,7 +90,6 @@ $w.onReady(function () {
 		console.log("onReady first groomer " + _groomerList[0].title)
 	}
 	$w('#trailRgnDrpDn').disable();
-	$w('#trailNameDrpDn').disable();
 	$w('#groomerPwdEdit').disable();
 	clearEntryFields();
 
@@ -233,7 +232,6 @@ export function groomerPwdEdit_change(event) {
 	console.log('groomerPwdEdit value '+$w('#groomersDrpDn').value + ' pwd '+chkPwd)
 	if ($w('#groomerPwdEdit').value===chkPwd){
 		$w('#trailRgnDrpDn').enable();
-		$w('#trailNameDrpDn').enable();
 		$w('#groomerPwdEdit').hide();
 
 		fillTrailsDoneTbl();
@@ -305,7 +303,6 @@ function fillTrailConditionDropDn(){
 async function fillTrailNameDrpDn(rgn) {
 	// Run a query that returns all the items in the collection
 	let nameOpts = [];
-	$w('#trailNameDrpDn').options = [];
 	if (rgn === "All") {
 		console.log("fillTrailNameDrpDn",rgn);
 		try {
@@ -314,7 +311,7 @@ async function fillTrailNameDrpDn(rgn) {
 				.find();
 				const uniqueTitles = getUniqueTrailNames(results.items);
 				nameOpts = buildOptions(uniqueTitles);
-				$w('#trailNameDrpDn').options = nameOpts;
+				// $w('#trailNameDrpDn').options = nameOpts;
 				_trailList = results.items;
 		}
 		catch (err) {
@@ -331,7 +328,7 @@ async function fillTrailNameDrpDn(rgn) {
 				// Call the function that creates a list of unique titles
 				const uniqueTitles = getUniqueTrailNames(results.items);
 				nameOpts = buildOptions(uniqueTitles);
-				$w('#trailNameDrpDn').options = nameOpts;
+				// $w('#trailNameDrpDn').options = nameOpts;
 				_trailList = results.items;
 		}
 		catch (err) {
@@ -363,10 +360,10 @@ async function fillTrailNameDrpDn(rgn) {
 	if (ndx > -1) {
 		$w('#trailRgnDrpDn').selectedIndex = Number(ndx);
 	}
-	$w('#trailNameDrpDn').selectedIndex = 0;
+	// $w('#trailNameDrpDn').selectedIndex = 0;
 	// $w('#trailNameDrpDn').value="";
 	_currTrailName = "";
-	console.log("fillTrialName set trail to "+_currTrailName);
+	console.log("fillTrailName set trail to "+_currTrailName);
 }
 
 // Builds an array from the "Title" field only from each item in 
@@ -408,16 +405,16 @@ function checkSubmit(){
 	}
 }
 
-export function trailNameDrpDn_change(event) {
-	// This function was added from the Properties & Events panel. 
-	// To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-	$w('#trailEntryBox').show();
-	_trailDataSubmit = 0;
-	clearEntryFields();
-	checkSubmit();
-	_currTrailName = $w('#trailNameDrpDn').value.toString();
-}
+// export function trailNameDrpDn_change(event) {
+// 	// This function was added from the Properties & Events panel. 
+// 	// To learn more, visit http://wix.to/UcBnC-4
+// 	// Add your code for this event here: 
+// 	$w('#trailEntryBox').show();
+// 	_trailDataSubmit = 0;
+// 	clearEntryFields();
+// 	checkSubmit();
+// 	_currTrailName = $w('#trailNameDrpDn').value.toString();
+// }
 
 export function trailRgnDrpDn_change(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
@@ -425,10 +422,11 @@ export function trailRgnDrpDn_change(event) {
 	let vlu=$w('#trailRgnDrpDn').value.toString();
 	fillTrailNameDrpDn(vlu);
 	_trailDataSubmit = 0;
-	if ($w('#trailNameDrpDn').selectedIndex>-1)
-		$w('#trailEntryBox').show();
-	else
-		$w('#trailEntryBox').hide();
+	$w('#trailEntryBox').show();
+	// if ($w('#trailNameDrpDn').selectedIndex>-1)
+	// 	$w('#trailEntryBox').show();
+	// else
+	// 	$w('#trailEntryBox').hide();
 
 	$w('#trailEntryBox').show();
 	clearEntryFields();
@@ -491,82 +489,6 @@ export function trailCondxTbl_rowSelect(event) {
 	$w('#removeTrailCondxBtn').enable();
 	let rowData = event.rowData;
 	_trailCondxTbleNdx = event.rowIndex;   
-}
-
-export async function old_submt(){
-	let cols = ""
-	for (var i=0;i<$w('#trailsDoneTbl').columns.length;i++){
-		
-		console.log("submitBtn trailsDone cols "+i+" label: "+$w('#trailsDoneTbl').columns[i].label+"; path "+$w('#trailsDoneTbl').columns[i].dataPath+"; vis "+$w('#trailsDoneTbl').columns[i].visible)
-	}
-	let trailId = "";
-	for (i = 0; i < _trailList.length; i++) {
-		console.log("trailNameDrpDn trail item = " + _trailList[i].title + " currTrail " + _currTrailName)
-		if (_trailList[i].title === _currTrailName) {
-			trailId = _trailList[i]._id
-			console.log("submitBtn trailNameDrpDn found trail " + _currTrailName + " with _id = " + _trailList[i]._id)
-			break;
-		}
-	}
-	let groomerId = "";
-	if (_groomerList.length < 1)
-		return;
-	for (i = 0; i < _groomerList.length; i++) {
-		if (_groomerList[i].title === $w('#groomersDrpDn').value) {
-			groomerId = _groomerList[i]._id;
-		}
-	}
-
-	if ((trailId.length < 2) || (groomerId.length < 2))
-		return;
-
-	let trlCndx = $w('#trailCondxTbl').rows[0].trail_conditions;
-	for (var ii = 1; ii < $w('#trailCondxTbl').rows.length; ii++) {
-		trlCndx += "; " + $w('#trailCondxTbl').rows[ii].trail_conditions
-	}
-
-	let trlGrmDate = $w('#trailGroomDate').value;
-	let grmTime = $w('#trailGroomTime').value;
-	let hour = Number(grmTime.substr(0, 2));
-	let minute = Number(grmTime.substr(3, 2));
-	trlGrmDate.setHours(hour);
-	trlGrmDate.setMinutes(minute);
-
-	let o = new Intl.DateTimeFormat("en-US", {
-		dateStyle: "medium"
-	});
-
-	_saveTime = $w('#trailGroomTime').value;			
-	let toInsert = {
-		"title": o.format(trlGrmDate),
-		"trailCondition": trlCndx,
-		"groomDate": trlGrmDate,
-		"classicSet": $w('#classicRadio1').value > 0,
-		"groomMachine": $w('#groomMachRadio1').value,
-		"groomerComment": $w('#commentEdit').value,
-		"editDate": new Date(),
-		"trailRef": trailId,
-		"groomerRef": groomerId
-	};
-	let newItmRef = "";
-	try {
-	let results = await wixData.insert("skiGroomingTable", toInsert);
-	if (results !== undefined){
-			_saveTime = $w('#trailGroomTime').value;			
-			let item = results;
-			console.log("submitBtn result "+results)
-			newItmRef = item._id;
-			// let tblrws = $w('#trailsDoneTbl').rows;
-			// tblrws.push(item);
-			// $w('#trailsDoneTbl').rows=tblrws;
-		}
-	}
-	catch(err){
-		console.log("submitBtn_click caught submit error "+err)
-	}
-	fillTrailsDoneTbl();
-	clearEntryFields();
-	checkSubmit();	
 }
 
 export async function submitBtn_click(event) {
