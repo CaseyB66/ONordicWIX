@@ -72,6 +72,7 @@ $w.onReady(function () {
 	fillGroomersDrpDn();
 	$w('#removeTrailCondxBtn').disable();
 	$w('#trailCondxTbl').rows = []
+	$w('#trailsDoneTbl').rows = []
 	var today = new Date();
 	var time_ms = today.getTime();
 	// today.setTime(time_ms+24*3600*1000);
@@ -107,6 +108,10 @@ $w.onReady(function () {
 			"; vis " + trlsDnCols[i].visible)
 	}
 	$w('#trailsDoneTbl').columns = trlsDnCols;
+	let logerrhtml = '<div style="font-size:18px;background-color:rgb(230,200,200);color:rgb(0,0,0);border: 2px solid red;\
+  border-radius: 8px;padding: 10px;">';	
+	$w('#loginErrorText').html=logerrhtml.concat('Incorrect password, try again!</div>');
+	$w('#loginErrorText').hide();
 });
 
 function hideTrailLabels(){
@@ -199,17 +204,30 @@ async function fillTrailsDoneTbl(){
 		.find();
 		var trlDnItems = results.items;
 		console.log("fillTrailsDoneTbl trail "+trlDnItems[0]["trailRef"]["title"]+"; groomer "+trlDnItems[0]["groomerRef"]["title"])
+		let oldTrails=$w('#trailsDoneTbl').rows;
 		$w('#trailsDoneTbl').rows=[];
-		let newRws=[]
+		let newRws=oldTrails
+		let oldfnd=false;
 // label: Trail; path trailDone
 // path groomerRef
 // path editDate
 
 		for (var j=0;j<trlDnItems.length;j++){
+			oldfnd=false
 			if (trlDnItems[j]["groomerRef"]["title"]===$w('#groomersDrpDn').value){
-				newRws.push({"trailDone":trlDnItems[j]["trailRef"]["title"]
-				, "groomerRef":trlDnItems[j]["groomerRef"]["title"]
-				, "editDate":trlDnItems[j]["editDate"]})
+				if (oldTrails.length>0){
+					for (var t=0;t<oldTrails.length;t++){
+						if (oldTrails[t].trailDone===trlDnItems[j]["trailRef"]["title"]){
+							oldfnd=true;
+							break;
+						}
+					}
+				}
+				if (!oldfnd){
+					newRws.push({"trailDone":trlDnItems[j]["trailRef"]["title"]
+					, "groomerRef":trlDnItems[j]["groomerRef"]["title"]
+					, "editDate":trlDnItems[j]["editDate"]})
+				}
 			}
 		}
 		$w('#trailsDoneTbl').rows=newRws;
@@ -241,6 +259,9 @@ export function groomerPwdEdit_change(event) {
 			$w("#groomersDrpDn").style.color = "rgb(50,50,50)";
 		})
 		// $w('#groomersDrpDn').disable();
+	} else {
+		console.log("groomerPwdEdit showing login error")
+		$w('#loginErrorText').show();
 	}
 }
 
@@ -250,12 +271,18 @@ async function fillGroomersDrpDn(){
 		.limit(20)
 		.find();
 		_groomerList = results.items;
-		console.log("fillGroomers "+_groomerList[0].title)
+		if (_groomerList.length<1)
+			return;
 		var grmOnly = _groomerList.map(item => item.title);
+		console.log("fillGroomersDrpDn groomerList length: "+_groomerList.length+
+			"; title: "+_groomerList[0]["title"]+"; grmOnly length: "+grmOnly.length+
+			"; grmOnly type "+typeof(grmOnly) )
 		let grmOpts=buildOptions(grmOnly);
-		if (grmOpts.length>0)
+		if (grmOpts.length>0){
+			console.log("fillGroomersDrpDn options[1]: "+grmOpts[1].label)
 			$w('#groomersDrpDn').options = grmOpts;
-	}
+		}
+		}
 	catch (err){
 		console.log("fillGroomerDrpDn caught error "+err.message)
 	}
@@ -572,6 +599,21 @@ export async function submitBtn_click(event) {
 		}
 
 	}
+	if ($w('#genCmntEdit').value.length>2){
+		try {
+			toInsert = {
+				"title": $w('#genCmntEdit').value,
+				"groomDate": trlGrmDate,
+				"groomerRef": groomerId
+			};
+			let results = await wixData.insert("skiGroomCommentTable", toInsert);
+			if (results !== undefined) {
+			}
+		}
+		catch (err) {
+			console.log("submitBtn_click caught error submit to SkiGroomComment " + err)
+		}
+	}
 	fillTrailsDoneTbl();
 	clearEntryFields();
 	checkSubmit();	
@@ -617,7 +659,7 @@ export function groomMachRadioALL_change(event) {
 	}
 }
 
-export function classicRadioALL_change(event) {
+export function classicRadioALL_click(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
 	let curVal=$w('#classicRadioALL').value;
@@ -628,5 +670,16 @@ export function classicRadioALL_change(event) {
 			console.log("classicRadioALL_change setting "+tmpStr+", to: "+curVal)
 			$w(tmpStr).value=curVal;
 		}
+	}
+}
+
+export function loginErrorText_click(event) {
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here: 
+}
+
+export function loginErrorText_click_1(event) {
+	if ($w('#loginErrorText').isVisible){
+		$w('#loginErrorText').hide();
 	}
 }

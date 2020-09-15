@@ -9,6 +9,7 @@ let _winWid=0;
 $w.onReady(function () {
 	$w('#scrnResltnTxt').hide();
 	$w('#hiddenGroomRptLgnd').hide();
+	$w('#genCmntText').hide();
 	let tbllgndhtml = '<p style="background-color:rgb(230,200,200);color:rgb(0,0,0);border: 2px solid red;\
   border-radius: 8px;padding: 10px;">';
 	tbllgndhtml = tbllgndhtml.concat("ClscSet=Classic Tracks Set; Mach=groomer machine used")
@@ -68,9 +69,14 @@ export function grmRptTrailRgnDrpDn_change(event) {
 
 function buildGrmRptTable(srtRws) {
 	let thisTrail = "";
-	let optns = $w('#reportOptionsCheck').options;
+	let trlrgn = $w('#grmRptTrailRgnDrpDn').value.toString().toUpperCase();
 	let ndx = $w('#reportOptionsCheck').selectedIndices;
 	let fullRpt = false;
+	if (ndx.length > 0 && ndx[0] === 0) {
+		fullRpt = true;
+	}
+
+	let lstRgn="";
 	let fntszfull = "width:100%;font-size:12px";
 	let fntszsimple = "width:60%;font-size:18px";
 	if (wixWindow.formFactor === "Mobile" || wixWindow.formFactor === "Tablet") {
@@ -82,10 +88,6 @@ function buildGrmRptTable(srtRws) {
 			fntszfull = "width:100%;font-size:8px";
 			fntszsimple = "width:100%;font-size:12px";
 		}
-	}
-	if (ndx.length > 0 && ndx[0] === 0) {
-		fullRpt = true;
-		console.log("buildGrmRptTable options " + optns.length + "; optns[0]: " + optns[0] + "; fullRpt: " + fullRpt)
 	}
 	var today = new Date();
 	var time_ms = today.getTime();
@@ -136,19 +138,25 @@ function buildGrmRptTable(srtRws) {
 					rwHtml = '<tr style="' + colorRed + ';border: 1px solid black;border-collapse: collapse;">'
 				}
 				// console.log("buildGrmRptTable row "+rwHtml)
-				rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailName"] + '</td>')
-				rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomTime"] + '</td>')
-				rwHtml = rwHtml.concat('<td>' + srtRws[i]["classicSet"] + '</td>')
-				if (fullRpt === true) {
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomMach"] + '</td>')
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailCondx"] + '</td>')
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmrCmnt"] + '</td>')
+				if ((trlrgn==="ALL") && (lstRgn!==srtRws[i]["region"])){
+					rwHtml = rwHtml.concat('<td colspan="3" style="text-align:center;background-color:rgb(255,255,255)">' + srtRws[i]["region"] + '</td>')
 				}
-				rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmr"] + '</td>')
+				else{
+					rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailName"] + '</td>')
+					rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomTime"] + '</td>')
+					rwHtml = rwHtml.concat('<td>' + srtRws[i]["classicSet"] + '</td>')
+					if (fullRpt === true) {
+						rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomMach"] + '</td>')
+						rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailCondx"] + '</td>')
+						rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmrCmnt"] + '</td>')
+					}
+					rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmr"] + '</td>')
+				}
 				tblsrc = tblsrc.concat(rwHtml + '</tr>')
 				// console.log("buildGrmRptTable fullrow "+rwHtml)
 			}
 			thisTrail = srtRws[i]["trailName"];
+			lstRgn = srtRws[i]["region"];
 		}
 		tblsrc = tblsrc.concat('</table>');
 	}
@@ -191,17 +199,19 @@ async function fillGrmRptTbl() {
 			.find();
 		var trlDnItems = results.items;
 		let newRws = []
-
+		console.log("fillGrmRptTbl items lgth "+trlDnItems.length+"; first item: "+trlDnItems[1]["trailRegion"])
 		for (var j = 0; j < trlDnItems.length; j++) {
+			if (trlDnItems[j]===undefined)
+				continue;
 			if ((rptrgn.toLowerCase() === "all") || (rptrgn === trlDnItems[j]["trailRef"]["trailRegion"])) {
 				let machtxt = "None";
-				if (trlDnItems[j]["groomMachine"] == 1) {
+				if (trlDnItems[j]["groomMachine"] === '1') {
 					machtxt = "Cat"
 				}
-				if (trlDnItems[j]["groomMachine"] == 3) {
+				if (trlDnItems[j]["groomMachine"] === '3') {
 					machtxt = "Cat&Sled"
 				}
-				if (trlDnItems[j]["groomMachine"] == 2) {
+				if (trlDnItems[j]["groomMachine"] === '2') {
 					machtxt = "Sled"
 				}
 				let timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
@@ -214,30 +224,38 @@ async function fillGrmRptTbl() {
 					"groomMach": machtxt,
 					"trailCondx": trlDnItems[j]["trailCondition"],
 					"grmrCmnt": trlDnItems[j]["groomerComment"],
-					"grmr": trlDnItems[j]["groomerRef"]["title"]
+					"grmr": trlDnItems[j]["groomerRef"]["title"],
+					'region':trlDnItems[j]["trailRef"]["trailRegion"]
 				})
 			}
 		}
 
 		var sortRows = newRws.sort(function (a, b) {
+			var rgnA = a.region.toUpperCase();
+			var rgnB = b.region.toUpperCase();
 			var nameA = a.trailName.toUpperCase(); // ignore upper and lowercase
 			var nameB = b.trailName.toUpperCase(); // ignore upper and lowercase
 			var dateA = a.fullDate;
 			var dateB = b.fullDate;
+			if (rgnA<rgnB){
+				return -1;
+			}
+			if (rgnA>rgnB){
+				return 1;
+			}
 			if (nameA < nameB) {
 				return -1;
 			}
 			if (nameA > nameB) {
 				return 1;
 			}
-			// names must be equal
+			// name and region must be equal
 			if (dateA < dateB) {
 				return 1;
 			}
 			if (dateA > dateB) {
 				return -1;
 			}
-
 			return 0;
 		});
 		if (sortRows.length > -1) {
@@ -245,6 +263,28 @@ async function fillGrmRptTbl() {
 		}
 	} catch (err) {
 		console.log("fillgrmRptTable caught error " + err)
+	}
+	try {
+		const results = await wixData.query("skiGroomCommentTable")
+			.include("groomerRef")
+			.limit(100)
+			.ge("groomDate", fltrDate)
+			.find();
+		var cmntItems = results.items;
+		if (cmntItems.length>0){
+			let cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+		border-radius: 8px;padding: 10px;font-size:18px">';
+			cmnthtml = cmnthtml.concat(cmntItems[0]["title"])
+			cmnthtml = cmnthtml.concat("</p>")
+			$w('#genCmntText').html = cmnthtml;
+			$w('#genCmntText').show();
+		}
+		else{
+			$w('#genCmntText').html = "";
+			$w('#genCmntText').hide();
+		}
+	} catch (err) {
+		console.log("fillgrmRptTable caught error getting general comment" + err)
 	}
 }
 
