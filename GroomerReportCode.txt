@@ -3,8 +3,8 @@ import wixData from 'wix-data';
 import wixSearch from 'wix-search';
 
 let _trailList = []
-let _winHt=0;
-let _winWid=0;
+let _winHt = 0;
+let _winWid = 0;
 
 $w.onReady(function () {
 	$w('#scrnResltnTxt').hide();
@@ -18,22 +18,23 @@ $w.onReady(function () {
 	$w('#hiddenGroomRptLgnd').html = tbllgndhtml;
 
 	fillTrailRgnDrpDn();
-	console.log("onReady report options length " + $w('#reportOptionsCheck').options.length + "; first " + $w('#reportOptionsCheck').options[0].label);
-	let hoursopts = [{ label: "1 Week", value: "168" }, 
-	{ label: "48 Hours", value: "48" }, 
-	{ label: "36 Hours", value: "36" }, 
-	{ label: "24 Hours", value: "24" }, 
-	{ label: "18 Hours", value: "18" }, 
-	{ label: "12 Hours", value: "12" }, 
-	{ label: "8 Hours", value: "8" }, 
-	{ label: "4 Hours", value: "4" }];
+	console.log("onReady report options length " + $w('#reportOptionsRadio').options.length + "; first " + $w('#reportOptionsRadio').options[0].label);
+	let hoursopts = [{ label: "1 Week", value: "168" },
+		{ label: "48 Hours", value: "48" },
+		{ label: "36 Hours", value: "36" },
+		{ label: "24 Hours", value: "24" },
+		{ label: "18 Hours", value: "18" },
+		{ label: "12 Hours", value: "12" },
+		{ label: "8 Hours", value: "8" },
+		{ label: "4 Hours", value: "4" }
+	];
 	$w('#grmRptHours').options = hoursopts;
-	console.log("onReady hours" + $w('#grmRptHours').options.length + "; first 3:" + $w('#grmRptHours').options[0].value + ", " + $w('#grmRptHours').options[1].value)
-	$w('#reportOptionsCheck').selectedIndices = [];
 	let tdy = new Date();
 	let dateTxt = tdy.toDateString();
 	let htmltxt = '<div style="font-size:18px;">' + dateTxt + '</div>'
 	$w('#grmRptDateTxt').html = htmltxt;
+	$w('#reportOptionsRadio').options = [{label:"Brief", value:'0'},{label:"All Trails", value:'1'},{label:"Full", value:'2'}]
+	$w('#reportOptionsRadio').selectedIndex = 0;
 });
 
 function fillTrailRgnDrpDn() {
@@ -45,7 +46,7 @@ function fillTrailRgnDrpDn() {
 			let rgnsOpts = buildOptions(rgns);
 			rgnsOpts.push({ label: "All", value: "All" })
 			$w('#grmRptTrailRgnDrpDn').options = rgnsOpts;
-			$w('#grmRptTrailRgnDrpDn').selectedIndex = 0;
+			$w('#grmRptTrailRgnDrpDn').selectedIndex = rgnsOpts.length - 1;
 			fillGrmRptTbl();
 		})
 }
@@ -70,21 +71,17 @@ export function grmRptTrailRgnDrpDn_change(event) {
 function buildGrmRptTable(srtRws) {
 	let thisTrail = "";
 	let trlrgn = $w('#grmRptTrailRgnDrpDn').value.toString().toUpperCase();
-	let ndx = $w('#reportOptionsCheck').selectedIndices;
-	let fullRpt = false;
-	if (ndx.length > 0 && ndx[0] === 0) {
-		fullRpt = true;
-	}
+	let ndx = $w('#reportOptionsRadio').selectedIndex;
+	console.log("buildGrmRptTable ndx " + ndx);
 
-	let lstRgn="";
+	let lstRgn = "";
 	let fntszfull = "width:100%;font-size:12px";
 	let fntszsimple = "width:60%;font-size:18px";
 	if (wixWindow.formFactor === "Mobile" || wixWindow.formFactor === "Tablet") {
-		if (_winWid>_winHt){
+		if (_winWid > _winHt) {
 			fntszfull = "width:100%;font-size:5px";
 			fntszsimple = "width:100%;font-size:9px";
-		}
-		else{
+		} else {
 			fntszfull = "width:100%;font-size:8px";
 			fntszsimple = "width:100%;font-size:12px";
 		}
@@ -92,7 +89,7 @@ function buildGrmRptTable(srtRws) {
 	var today = new Date();
 	var time_ms = today.getTime();
 	let tblsrc = "";
-	if (fullRpt === true) {
+	if (ndx === 2) {
 		tblsrc = '<table style="' + fntszfull;
 		tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
 	border: 1px solid black;border-collapse: collapse;">\
@@ -117,6 +114,7 @@ function buildGrmRptTable(srtRws) {
   	</tr>');
 	}
 	let rwHtml = ""
+	let rgnHtml = ""
 	let colorRed = "background-color:rgb(250,0,0)"
 	let colorGreen = "background-color:rgb(0,250,0)"
 	let colorYellow = "background-color:rgb(200,200,0)"
@@ -125,32 +123,39 @@ function buildGrmRptTable(srtRws) {
 			<td colspan="4">No Data!! Try different region or longer duration</td>\
 		</tr>');
 		tblsrc = tblsrc.concat('</table>');
-		// console.log("buildGrmRptTable html="+tblsrc);
+
 	} else {
 		for (var i = 0; i < srtRws.length; i++) {
 			var tdiff = time_ms - srtRws[i]["fullDate"].getTime();
-			if ((fullRpt === true) || ((fullRpt === false) && (thisTrail !== srtRws[i]["trailName"]))) {
+			rgnHtml = ""
+			rwHtml = ""
+			if ((ndx > 0) && ((trlrgn === "ALL") && (lstRgn !== srtRws[i]["region"]))) {
+				rgnHtml = '<tr style="text-align:center;background-color:rgb(255,255,255)">'
+				rgnHtml = rwHtml.concat('<td colspan="3" style="text-align:center;background-color:rgb(255,255,255)">' + srtRws[i]["region"] + '</td>')
+			}
+			console.log("buildGrmRptTable trail: " + srtRws[i]["trailName"] + "(" + thisTrail + ")" + "; ndx: " + ndx + "; priority: " + srtRws[i]["priority"] + "; mach: " + srtRws[i]["groomMachNbr"]);
+			if (((ndx === 0) && (srtRws[i]["priority"] === 1) && (thisTrail !== srtRws[i]["trailName"])) ||
+				(ndx === 2) ||
+				((ndx === 1) && (thisTrail !== srtRws[i]["trailName"]))) {
+				console.log("buildGrmRptTable OK: " + srtRws[i]["trailName"]);
 				if (tdiff < 15 * 3600000) {
-					rwHtml = '<tr style="' + colorGreen + ';border: 1px solid black;border-collapse: collapse;">'
+					rwHtml = rwHtml.concat('<tr style="' + colorGreen + ';border: 1px solid black;border-collapse: collapse;">')
 				} else if (tdiff < 24 * 3600000) {
-					rwHtml = '<tr style="' + colorYellow + ';border: 1px solid black;border-collapse: collapse;">'
+					rwHtml = rwHtml.concat('<tr style="' + colorYellow + ';border: 1px solid black;border-collapse: collapse;">')
 				} else {
-					rwHtml = '<tr style="' + colorRed + ';border: 1px solid black;border-collapse: collapse;">'
+					rwHtml = rwHtml.concat('<tr style="' + colorRed + ';border: 1px solid black;border-collapse: collapse;">')
 				}
-				// console.log("buildGrmRptTable row "+rwHtml)
-				if ((trlrgn==="ALL") && (lstRgn!==srtRws[i]["region"])){
-					rwHtml = rwHtml.concat('<td colspan="3" style="text-align:center;background-color:rgb(255,255,255)">' + srtRws[i]["region"] + '</td>')
+				rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailName"] + '</td>')
+				rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomTime"] + '</td>')
+				rwHtml = rwHtml.concat('<td>' + srtRws[i]["classicSet"] + '</td>')
+				if (ndx === 2) {
+					rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomMach"] + '</td>')
+					rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailCondx"] + '</td>')
+					rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmrCmnt"] + '</td>')
 				}
-				else{
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailName"] + '</td>')
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomTime"] + '</td>')
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["classicSet"] + '</td>')
-					if (fullRpt === true) {
-						rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomMach"] + '</td>')
-						rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailCondx"] + '</td>')
-						rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmrCmnt"] + '</td>')
-					}
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmr"] + '</td>')
+				rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmr"] + '</td>')
+				if (rgnHtml.length > 5) {
+					tblsrc = tblsrc.concat(rgnHtml + '</tr>')
 				}
 				tblsrc = tblsrc.concat(rwHtml + '</tr>')
 				// console.log("buildGrmRptTable fullrow "+rwHtml)
@@ -174,34 +179,38 @@ async function fillGrmRptTbl() {
 		minute: '2-digit'
 	};
 	let wininfo = await wixWindow.getBoundingRect();
-	_winHt=wininfo.window.height;
-	_winWid=wininfo.window.width;
+	_winHt = wininfo.window.height;
+	_winWid = wininfo.window.width;
 	let tbllgndhtml = '<p style="background-color:rgb(230,200,200);color:rgb(0,0,0);border: 2px solid red;\
   border-radius: 8px;padding: 1px;">';
-	tbllgndhtml = tbllgndhtml.concat('<br>Ht: '+_winHt+'</br>')
-	tbllgndhtml = tbllgndhtml.concat('<br>Wid: '+_winWid+'</br>')
+	tbllgndhtml = tbllgndhtml.concat('<br>Ht: ' + _winHt + '</br>')
+	tbllgndhtml = tbllgndhtml.concat('<br>Wid: ' + _winWid + '</br>')
 	tbllgndhtml = tbllgndhtml.concat("</p>")
-	$w('#scrnResltnTxt').html=tbllgndhtml;
+	$w('#scrnResltnTxt').html = tbllgndhtml;
 	// $w('#scrnResltnTxt').show();
-	
+
 	var today = new Date();
 	var time_ms = today.getTime();
 	let hrs = $w('#grmRptHours').value;
 	let fltrDate = new Date(time_ms - hrs * 60 * 60000);
 	console.log("fillgrmRptTable hours " + hrs + "; filter date " + fltrDate.toLocaleDateString("en-US", dateStrOpts))
 	$w('#grmRptTable').html = "";
+	let mchfltr = '1';
+	if ($w('#reportOptionsRadio').selectedIndex === 2)
+		mchfltr = '0'
 	try {
 		const results = await wixData.query("skiGroomingTable")
 			.include("trailRef")
 			.include("groomerRef")
-			.limit(100)
+			.limit(500)
 			.ge("groomDate", fltrDate)
+			.ge("groomMachine", mchfltr)
 			.find();
 		var trlDnItems = results.items;
 		let newRws = []
-		console.log("fillGrmRptTbl items lgth "+trlDnItems.length+"; first item: "+trlDnItems[1]["trailRegion"])
+		console.log("fillGrmRptTbl items lgth " + trlDnItems.length + "; first item: " + trlDnItems[1]["trailRegion"])
 		for (var j = 0; j < trlDnItems.length; j++) {
-			if (trlDnItems[j]===undefined)
+			if (trlDnItems[j] === undefined)
 				continue;
 			if ((rptrgn.toLowerCase() === "all") || (rptrgn === trlDnItems[j]["trailRef"]["trailRegion"])) {
 				let machtxt = "None";
@@ -215,17 +224,18 @@ async function fillGrmRptTbl() {
 					machtxt = "Sled"
 				}
 				let timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
-
 				newRws.push({
 					"trailName": trlDnItems[j]["trailRef"]["title"],
 					"fullDate": trlDnItems[j]["groomDate"],
 					"groomTime": timStr,
 					"classicSet": trlDnItems[j]["classicSet"],
+					"groomMachNbr": trlDnItems[j]["groomMachine"],
 					"groomMach": machtxt,
 					"trailCondx": trlDnItems[j]["trailCondition"],
 					"grmrCmnt": trlDnItems[j]["groomerComment"],
 					"grmr": trlDnItems[j]["groomerRef"]["title"],
-					'region':trlDnItems[j]["trailRef"]["trailRegion"]
+					'region': trlDnItems[j]["trailRef"]["trailRegion"],
+					'priority': trlDnItems[j]["trailRef"]["reportPriority"]
 				})
 			}
 		}
@@ -237,10 +247,10 @@ async function fillGrmRptTbl() {
 			var nameB = b.trailName.toUpperCase(); // ignore upper and lowercase
 			var dateA = a.fullDate;
 			var dateB = b.fullDate;
-			if (rgnA<rgnB){
+			if (rgnA < rgnB) {
 				return -1;
 			}
-			if (rgnA>rgnB){
+			if (rgnA > rgnB) {
 				return 1;
 			}
 			if (nameA < nameB) {
@@ -271,15 +281,27 @@ async function fillGrmRptTbl() {
 			.ge("groomDate", fltrDate)
 			.find();
 		var cmntItems = results.items;
-		if (cmntItems.length>0){
+
+		var sortCmnt = cmntItems.sort(function (a, b) {
+			var dateA = a.groomDate;
+			var dateB = b.groomDate;
+			if (dateA < dateB) {
+				return 1;
+			}
+			if (dateA > dateB) {
+				return -1;
+			}
+			return 0;
+		});
+
+		if ((sortCmnt.length > 0) && (sortCmnt[0]["groomDate"] > fltrDate)) {
 			let cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
 		border-radius: 8px;padding: 10px;font-size:18px">';
-			cmnthtml = cmnthtml.concat(cmntItems[0]["title"])
+			cmnthtml = cmnthtml.concat(sortCmnt[0]["title"])
 			cmnthtml = cmnthtml.concat("</p>")
 			$w('#genCmntText').html = cmnthtml;
 			$w('#genCmntText').show();
-		}
-		else{
+		} else {
 			$w('#genCmntText').html = "";
 			$w('#genCmntText').hide();
 		}
@@ -289,12 +311,6 @@ async function fillGrmRptTbl() {
 }
 
 export function grmRptHours_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-	fillGrmRptTbl();
-}
-
-export function reportOptionsCheck_change(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
 	fillGrmRptTbl();
@@ -319,8 +335,10 @@ export function grmRptTable_click(event) {
 }
 
 export function scrnResltnTxt_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	$w('#scrnResltnTxt').hide();
 
+}
+
+export function reportOptionsRadio_change(event) {
+	fillGrmRptTbl();
 }
