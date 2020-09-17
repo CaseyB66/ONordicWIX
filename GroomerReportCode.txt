@@ -193,6 +193,7 @@ async function fillGrmRptTbl() {
 	var time_ms = today.getTime();
 	let hrs = $w('#grmRptHours').value;
 	let fltrDate = new Date(time_ms - hrs * 60 * 60000);
+	let timStr = ""
 	console.log("fillgrmRptTable hours " + hrs + "; filter date " + fltrDate.toLocaleDateString("en-US", dateStrOpts))
 	$w('#grmRptTable').html = "";
 	let mchfltr = '1';
@@ -223,7 +224,7 @@ async function fillGrmRptTbl() {
 				if (trlDnItems[j]["groomMachine"] === '2') {
 					machtxt = "Sled"
 				}
-				let timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
+				timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 				newRws.push({
 					"trailName": trlDnItems[j]["trailRef"]["title"],
 					"fullDate": trlDnItems[j]["groomDate"],
@@ -295,8 +296,10 @@ async function fillGrmRptTbl() {
 		});
 
 		if ((sortCmnt.length > 0) && (sortCmnt[0]["groomDate"] > fltrDate)) {
+			timStr = sortCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 			let cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
-		border-radius: 8px;padding: 10px;font-size:18px">';
+		border-radius: 8px;padding: 10px;font-size:16px">';
+			cmnthtml = cmnthtml.concat(timStr+": ");
 			cmnthtml = cmnthtml.concat(sortCmnt[0]["title"])
 			cmnthtml = cmnthtml.concat("</p>")
 			$w('#genCmntText').html = cmnthtml;
@@ -341,4 +344,8 @@ export function scrnResltnTxt_click(event) {
 
 export function reportOptionsRadio_change(event) {
 	fillGrmRptTbl();
+}
+
+export function hiddenGroomRptLgnd_click(event) {
+	$w('#hiddenGroomRptLgnd').hide();
 }
