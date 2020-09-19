@@ -42,7 +42,7 @@ let _elmntsChng = [
     ];
 
 function _elmntsCheckFunction(value, index, array) {
-	console.log("_elmntsCheck: key "+array[index].key+"; isSet "+array[index].isSet);
+	// console.log("_elmntsCheck: key "+array[index].key+"; isSet "+array[index].isSet);
 	return array[index].isSet===true; 
 }
 
@@ -269,6 +269,8 @@ async function fillGroomersDrpDn(){
 	try {
 		const results = await wixData.query("groomersTable")
 		.limit(20)
+		.eq("trailType","ski")
+		.or(wixData.query("groomersTable").eq("trailType","both"))
 		.find();
 		_groomerList = results.items;
 		if (_groomerList.length<1)
@@ -291,11 +293,11 @@ async function fillGroomersDrpDn(){
 function fillTrailRgnDrpDn(){
 	wixData.query("skiTrailsTable")
 	.limit(20)
+	.eq("trailType","ski")
 	.find()
 	.then(results =>{
 		const rgns = getUniqueTrailRegions(results.items);
 		let rgnsOpts=buildOptions(rgns);
-		rgnsOpts.push({label:"All", value:"All"})
 		$w('#trailRgnDrpDn').options = rgnsOpts;
 		var ndx=-1;
 		for (var i=0;i<rgnsOpts.length;i++){
@@ -335,6 +337,8 @@ async function fillTrailNameDrpDn(rgn) {
 		try {
 			const results = await wixData.query("skiTrailsTable")
 				.limit(100)
+				.eq("trailType","ski")
+				.ascending("viewSort")
 				.find();
 				const uniqueTitles = getUniqueTrailNames(results.items);
 				nameOpts = buildOptions(uniqueTitles);
@@ -351,6 +355,8 @@ async function fillTrailNameDrpDn(rgn) {
 				// Get the max possible results from the query
 				.limit(100)
 				.eq("trailRegion", rgn)
+				.eq("trailType","ski")
+				.ascending("viewSort")
 				.find();
 				// Call the function that creates a list of unique titles
 				const uniqueTitles = getUniqueTrailNames(results.items);
