@@ -27,12 +27,13 @@
       }
     </style>
   </head>
-  <body>
-    <script  async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&callback=initMap"></script>
+  <body> 
+    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&callback=initMap"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&libraries=geometry"></script>
     <script type="text/javascript">
       var map;
       function initMap() {
+        console.log("initmap")
         map = new google.maps.Map(document.getElementById('map'), {
           zoom: 15,
           center: {lat: 41.371089, lng: -111.902241}
