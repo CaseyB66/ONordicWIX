@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Ogden Nordic Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <style>
+      .button {
+        background-color: #155DE9;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        font-family: 'Arial';
+      }
+      .label {
+        font-family: 'Arial';
+      }
+      .input {
+        font-size: 14px;
+      }
+      /* Always set the map height explicitly to define 
+      /* the size of the div element that contains the map.
+      #map {
+        height: 90%;
+      	width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <script  async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&callback=initMap"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&libraries=geometry"></script>
+    <script type="text/javascript">
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 15,
+          center: {lat: 41.371089, lng: -111.902241}
+        });        
+      }
+    </script>
+    <div id="map"></div>
+  </body>
+</html>
