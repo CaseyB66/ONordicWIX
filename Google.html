@@ -1,45 +1,72 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>Ogden Nordic Map</title>
-    <meta name="viewport" content="initial-scale=1.0">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Testing WIX HTML</title>
     <style>
-      .button {
-        background-color: #155DE9;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        text-align: center;
-        font-family: 'Arial';
+    #map {
+      border-style: solid; 
+      height: 90%;	
+      width: 100%;
+      position: relative;
+      left: 100px;
+      border: 3px solid #73AD21;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    html, body {height: 400px; width: 100%;
+        margin: 0;
+        padding: 0;
       }
-      .label {
-        font-family: 'Arial';
-      }
-      .input {
-        font-size: 14px;
-      }
-      /* Always set the map height explicitly to define 
-      /* the size of the div element that contains the map.
-      #map {
-        height: 90%;
-      	width: 100%;
-      }
-    </style>
+  	</style>
   </head>
-  <body> 
+  <body onload="ready()">
     <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&callback=initMap"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&libraries=geometry"></script>
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w&libraries=geometry"></script>-->
     <script type="text/javascript">
       var map;
+      var initCtr={lat: 41.371089, lng: -111.902241}
       function initMap() {
         console.log("initmap")
-        map = new google.maps.Map(document.getElementById('map'), {
+        map = new google.maps.Map(document.getElementById("map"), {
           zoom: 15,
-          center: {lat: 41.371089, lng: -111.902241}
-        });        
+          center: initCtr
+        });
+        var msg={
+          "type":"init",
+          "label":"ONordic",
+          "value":initCtr
+        };
+        window.parent.postMessage(msg , "*");
+      }
+      window.onmessage = function(event){
+          if (event.data && event.data.hasOwnProperty('type')) {
+            console.log("map found event type "+event.data.type+"; value "+event.data.value[0]);
+            if (event.data.type==="addloc"){
+              var latLng = new google.maps.LatLng(event.data.value['lat'],event.data.value['lng']);
+              var marker = new google.maps.Marker({
+              position: latLng,
+              title: event.data.label,
+              label: event.data.label,
+              map: map
+              });
+            }
+          }
+          else {
+            console.log("map received a generic message:");
+            console.log(event.data);
+          }
+        };
+      function ready(){
+        var msg={
+          "type":"ready",
+          "label":"",
+          "value":0
+        };
+        window.parent.postMessage(msg , "*");
       }
     </script>
+    <p> This is a new web site we are just testing.</p>
     <div id="map"></div>
+    
   </body>
 </html>
