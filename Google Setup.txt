@@ -1,7 +1,6 @@
 Google cloud: console.cloud.google.com
 Setup free 90-day trial under manager@ogdennordic.com, Northfork1
 KCB CC
-API Key AIzaSyBMV_BVcdXCKMhCAebKCEhyrARIUQWeF5w
 Coordinates of Ogden Nordic:
 Lat: 41.371089° Long: -111.902241°
 41°22'15.93" N 111°54'07.77" W
