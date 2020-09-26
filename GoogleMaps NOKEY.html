@@ -20,7 +20,7 @@
   	</style>
   </head>
   <body onload="ready()">
-    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=APIKEY&callback=initMap"></script>
+    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
     <script type="text/javascript">
       var map;
       var initCtr={lat: 41.371089, lng: -111.902241}
@@ -37,6 +37,7 @@
         };
         window.parent.postMessage(msg , "*");
       }
+      
       window.onmessage = function(event){
           if (event.data && event.data.hasOwnProperty('type')) {
             console.log("map found event type "+event.data.type+"; value "+event.data.value[0]);
@@ -49,6 +50,48 @@
               map: map
               });
             }
+            if (event.data.type==="addtrack"){
+              var pointarray = [];
+              var trackpoints= event.data.value.getElementsByTagName("trkpt");
+              if(trackpoints.length == 0) {
+                  return;
+              }
+
+              var lastlon = parseFloat(trackpoints[0].getAttribute("lon"));
+              var lastlat = parseFloat(trackpoints[0].getAttribute("lat"));
+              var latlng = new google.maps.LatLng(lastlat,lastlon);
+              pointarray.push(latlng);
+              for(var i = 1; i < trackpoints.length; i++) {
+                  var lon = parseFloat(trackpoints[i].getAttribute("lon"));
+                  var lat = parseFloat(trackpoints[i].getAttribute("lat"));
+              
+                  // Verify that this is far enough away from the last point to be used.
+                  var latdiff = lat - lastlat;
+                  var londiff = lon - lastlon;
+                  if(Math.sqrt(latdiff*latdiff + londiff*londiff)
+                          > this.mintrackpointdelta) {
+                      lastlon = lon;
+                      lastlat = lat;
+                      latlng = new google.maps.LatLng(lat,lon);
+                      pointarray.push(latlng);
+                  }
+              }
+              var polyline = new google.maps.Polyline({
+                  path: pointarray,
+                  strokeColor: red,
+                  strokeWeight: 3,
+                  title: event.data.label,
+                  label: event.data.label,
+                  map: map
+              });
+            var msg={
+              "type":"addtrack",
+              "label":"event.data.label",
+              "value":pointarray.length
+            };
+            window.parent.postMessage(msg , "*");
+            }
+
           }
           else {
             console.log("map received a generic message:");
