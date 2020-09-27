@@ -13,7 +13,7 @@
       border: 3px solid #73AD21;
     }
     /* Optional: Makes the sample page fill the window. */
-    html, body {height: 400px; width: 100%;
+    html, body {height: 600px; width: 100%;
         margin: 0;
         padding: 0;
       }
@@ -22,13 +22,17 @@
   <body onload="ready()">
     <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
     <script type="text/javascript">
+      const mintrackpointdelta = 0.0001;
       var map;
+      var polylinetrk=null;
+      var pointarray = [];
       var initCtr={lat: 41.371089, lng: -111.902241}
       function initMap() {
         console.log("initmap")
         map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 15,
-          center: initCtr
+          zoom: 14,
+          center: initCtr,
+          mapTypeId: "terrain",
         });
         var msg={
           "type":"init",
@@ -51,39 +55,48 @@
               });
             }
             if (event.data.type==="addtrack"){
-              var pointarray = [];
-              var trackpoints= event.data.value.getElementsByTagName("trkpt");
+              parser = new DOMParser();
+              xmlDoc = parser.parseFromString(event.data.value,"text/xml");
+              if (pointarray.length>2)
+                polylinetrk.setMap(null);
+              pointarray = [];
+              var trackpoints= xmlDoc.getElementsByTagName("trkpt");
               if(trackpoints.length == 0) {
+                  console.log("addtrack returning with no trkpt")
                   return;
               }
+              console.log("addtrack found "+trackpoints.length+" trkpts")
 
               var lastlon = parseFloat(trackpoints[0].getAttribute("lon"));
               var lastlat = parseFloat(trackpoints[0].getAttribute("lat"));
+              console.log("addTrack lat/lon: "+lastlat+"/"+lastlon)
               var latlng = new google.maps.LatLng(lastlat,lastlon);
               pointarray.push(latlng);
               for(var i = 1; i < trackpoints.length; i++) {
                   var lon = parseFloat(trackpoints[i].getAttribute("lon"));
                   var lat = parseFloat(trackpoints[i].getAttribute("lat"));
+                  console.log("addTrack lat/lon: "+lat+"/"+lon)
               
                   // Verify that this is far enough away from the last point to be used.
                   var latdiff = lat - lastlat;
                   var londiff = lon - lastlon;
                   if(Math.sqrt(latdiff*latdiff + londiff*londiff)
-                          > this.mintrackpointdelta) {
+                          > mintrackpointdelta) {
                       lastlon = lon;
                       lastlat = lat;
                       latlng = new google.maps.LatLng(lat,lon);
-                      pointarray.push(latlng);
+                      pointarray.push({ lat: lat, lng: lon});
                   }
               }
-              var polyline = new google.maps.Polyline({
+              console.log("addTrack found "+pointarray.length+" points")
+              polylinetrk = new google.maps.Polyline({
                   path: pointarray,
-                  strokeColor: red,
+                  strokeColor: "#FF0000",
                   strokeWeight: 3,
                   title: event.data.label,
-                  label: event.data.label,
-                  map: map
+                  label: event.data.label
               });
+              polylinetrk.setMap(map);
             var msg={
               "type":"addtrack",
               "label":"event.data.label",
@@ -107,7 +120,6 @@
         window.parent.postMessage(msg , "*");
       }
     </script>
-    <p> This is a new web site we are just testing.</p>
     <div id="map"></div>
     
   </body>

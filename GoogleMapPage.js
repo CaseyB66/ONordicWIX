@@ -1,5 +1,6 @@
 import wixData from 'wix-data';
-import {getFileInfo} from 'backend/GoogleMap'
+import {roughSizeOfObject} from 'public/misc.js'
+
 // For full API documentation, including code examples, visit https://wix.to/94BuAAs
 
 let _currTrailName="";
@@ -11,7 +12,6 @@ $w.onReady(function () {
     $w('#latEdit').max=41.395;
     $w('#lngEdit').max=-111.896
     $w('#lngEdit').min=-111.930;
-    let trailsinfo=getFileInfo("GPXPaths/SkiTrails.gpx")
 	$w("#googleMapHTML").onMessage((event)=>{
 
 		if(event.data.type === 'ready'){
@@ -31,11 +31,23 @@ $w.onReady(function () {
 });
 
 export function sendTrack(name,xml){
-    var pts = xml.getElementsByTagName("trkpt");
-    console.log("sendTrack: xml length "+pts.length)
+    var sz = roughSizeOfObject(xml);
+    console.log("sendTrack: xml length "+xml.length+"; rough size "+sz)
+    var kys=Object.keys(xml);
+    const doloop=false;
+    if (doloop){
+        for (const ky in kys) {
+            for( var kyobj in xml[ky] ) {
+                    console.log("sendTrack kyobj "+kyobj[0]);
+                }
+        }    
+    }
+    // var parser = new DOMParser();
+    // var xmlDoc = parser.parseFromString(xml,"text/xml");
+
     var msg={
-        type:"addloc",
-        label:$w('#locNameEdit').value,
+        type:"addtrack",
+        label:_currTrailName,
         value:xml
         }
         $w("#googleMapHTML").postMessage(msg);        
@@ -80,7 +92,7 @@ async function fillTrailRgnDrpDn() {
     catch (err) {
         console.log("fillTrailNameDrpDn caught "+err);
     }
-trailRgnDrpDn_change(undefined);
+doTrailRgn_change();
 }
 
 async function fillTrailNameDrpDn(rgn){
@@ -122,7 +134,7 @@ async function fillTrailNameDrpDn(rgn){
 		}
 	}
     let ctlLgth=fndTrailList.length;
-    _currTrailList=fndTrailList.filter(function(elmnt){return (elmnt.gpxData!==undefined);})
+    _currTrailList=fndTrailList.filter(function(elmnt){return (elmnt.gpxText!==undefined);})
     console.log("fillTrailNameDrpDn reduced trailList from "+ctlLgth+" to "+_currTrailList.length)
 
     const titlesOnly = _currTrailList.map(item => item.title);   
@@ -151,11 +163,24 @@ async function fillTrailNameDrpDn(rgn){
 	_currTrailName = _currTrailList[0].title;
     $w('#trailNameDrpDn').selectedIndex=0;
 	console.log("fillTrailName set trail to "+_currTrailName);
-    sendTrack(_currTrailName,_currTrailList,_currTrailList[0].gpxData)
+    sendTrack(_currTrailName,_currTrailList[0].gpxText)
 }
 
-export function trailRgnDrpDn_change(event) {
+export function doTrailRgn_change(){
     let rgn=$w('#trailRgnDrpDn').options[$w('#trailRgnDrpDn').selectedIndex].label
     console.log("trailRgnDrpDn_change "+rgn)
     return fillTrailNameDrpDn(rgn);
+}
+
+export function trailNameDrpDn_change(event) {
+    _currTrailName=$w('#trailNameDrpDn').value;
+    for (var i=0;i<_currTrailList.length;i++){
+        if (_currTrailList[i].title===_currTrailName)
+            break;
+    }
+    sendTrack(_currTrailName, _currTrailList[i].gpxText);
+}
+
+export function trailRgnDrpDn_change(event) {
+    doTrailRgn_change();
 }
