@@ -8,8 +8,8 @@
       border-style: solid; 
       height: 90%;	
       width: 90%;
-      position: relative;
-      left: 0px;
+      position: absolute;
+      right: 0px;
       border: 3px solid #73AD21;
     }
     /* Optional: Makes the sample page fill the window. */
@@ -24,8 +24,11 @@
     <script type="text/javascript">
       const mintrackpointdelta = 0.0001;
       var map;
+      var contentString="";
       var polylinetrk=null;
+      var trailmarker=null;
       var pointarray = [];
+      var deg_rads = (2*Math.PI)/360.0;
       var initCtr={lat: 41.371089, lng: -111.902241}
       function initMap() {
         console.log("initmap")
@@ -59,35 +62,60 @@
               xmlDoc = parser.parseFromString(event.data.value,"text/xml");
               if (pointarray.length>2)
                 polylinetrk.setMap(null);
+              if (trailmarker!==null){
+                trailmarker.setMap(null);
+                trailmarker=null;
+              }
               pointarray = [];
               var trackpoints= xmlDoc.getElementsByTagName("trkpt");
               if(trackpoints.length == 0) {
                   console.log("addtrack returning with no trkpt")
                   return;
               }
-              console.log("addtrack found "+trackpoints.length+" trkpts")
 
-              var lastlon = parseFloat(trackpoints[0].getAttribute("lon"));
-              var lastlat = parseFloat(trackpoints[0].getAttribute("lat"));
-              console.log("addTrack lat/lon: "+lastlat+"/"+lastlon)
-              var latlng = new google.maps.LatLng(lastlat,lastlon);
-              pointarray.push(latlng);
+              var lastlon = parseFloat(trackpoints[0].getAttribute("lon"))*deg_rads;
+              var lastlat = parseFloat(trackpoints[0].getAttribute("lat"))*deg_rads;
+              var trailLgth=0;
+              var minlat=1E20;var maxlat=-1E20;
+              var minlon=1E20;var maxlon=-1E20;
+              var meanlat=lastlat; var meanlon=lastlon;
+              var a=0; 
+              var c=0;
+              var thisLgth=0;
+              pointarray.push({ lat: lastlat/deg_rads, lng: lastlon/deg_rads});
               for(var i = 1; i < trackpoints.length; i++) {
-                  var lon = parseFloat(trackpoints[i].getAttribute("lon"));
-                  var lat = parseFloat(trackpoints[i].getAttribute("lat"));
-                  console.log("addTrack lat/lon: "+lat+"/"+lon)
-              
+                  var lon = parseFloat(trackpoints[i].getAttribute("lon"))*deg_rads;
+                  var lat = parseFloat(trackpoints[i].getAttribute("lat"))*deg_rads;
                   // Verify that this is far enough away from the last point to be used.
                   var latdiff = lat - lastlat;
                   var londiff = lon - lastlon;
-                  if(Math.sqrt(latdiff*latdiff + londiff*londiff)
-                          > mintrackpointdelta) {
+                  try{
+                    a = (Math.sin(latdiff/2))**2 + Math.cos(lat) * Math.cos(lastlat) * (Math.sin(londiff/2))**2;
+                    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a) )
+                    thisLgth = 3961 * c; // (where 3961 miles is the radius of the Earth) 
+                  } catch(err){
+                    console.log("addTrack caught math error "+err);
+                  }
+                  if(thisLgth> mintrackpointdelta) {
+                      console.log("addTrack d = "+thisLgth);
+                      trailLgth+=thisLgth;
                       lastlon = lon;
                       lastlat = lat;
-                      latlng = new google.maps.LatLng(lat,lon);
-                      pointarray.push({ lat: lat, lng: lon});
+                      meanlat+=lat;
+                      meanlon+=lon;
+                      if (minlat>lat)
+                        minlat=lat;
+                      if (maxlat<lat)
+                        maxlat=lat;
+                      if (minlon>lon)
+                        minlon=lon;
+                      if (maxlon<lon)
+                        maxlon=lon;
+                      pointarray.push({ lat: lat/deg_rads, lng: lon/deg_rads});
                   }
               }
+              meanlat/=pointarray.length;
+              meanlon/=pointarray.length;
               console.log("addTrack found "+pointarray.length+" points")
               polylinetrk = new google.maps.Polyline({
                   path: pointarray,
@@ -97,10 +125,36 @@
                   label: event.data.label
               });
               polylinetrk.setMap(map);
+
+              contentString = '<div id="content">'+
+                  '<div id="siteNotice">'+
+                  '</div>'+
+                  '<h3 id="firstHeading" class="firstHeading">'+event.data.label+'</h3>'+
+                  '<div id="bodyContent">'+
+                  '<p>Trail Length: ';
+                  contentString=contentString.concat(trailLgth.toFixed(2).toString());
+                  contentString=contentString.concat(' miles (');
+                  contentString=contentString.concat((1.609344*trailLgth).toFixed(2).toString());
+                  contentString=contentString.concat(' km)');
+                  contentString=contentString.concat('</p></div></div>');
+              console.log("addTrack info: "+contentString);
+
+              var infowindow = new google.maps.InfoWindow({
+                    content: contentString
+                });
+              trailmarker = new google.maps.Marker({
+                  position: { lat: meanlat/deg_rads, lng: meanlon/deg_rads},
+                  map: map,
+                  title: event.data.label
+              });
+              google.maps.event.addListener(trailmarker, 'click', function() {
+                infowindow.open(map,trailmarker);
+              });
+
             var msg={
               "type":"addtrack",
-              "label":"event.data.label",
-              "value":pointarray.length
+              "label":event.data.label,
+              "value":[minlat.toFixed(4),maxlat.toFixed(4),minlon.toFixed(4),maxlon.toFixed(4),meanlat.toFixed(4),meanlon.toFixed(4)]
             };
             window.parent.postMessage(msg , "*");
             }

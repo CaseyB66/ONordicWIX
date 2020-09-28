@@ -5,13 +5,9 @@ import {roughSizeOfObject} from 'public/misc.js'
 
 let _currTrailName="";
 let _currTrailList = [];
-
 $w.onReady(function () {
     console.log("onReady")
-    $w('#latEdit').min=41.358;
-    $w('#latEdit').max=41.395;
-    $w('#lngEdit').max=-111.896
-    $w('#lngEdit').min=-111.930;
+    doTest();
 	$w("#googleMapHTML").onMessage((event)=>{
 
 		if(event.data.type === 'ready'){
@@ -51,23 +47,6 @@ export function sendTrack(name,xml){
         value:xml
         }
         $w("#googleMapHTML").postMessage(msg);        
-}
-
-export function addLocBtn_click(event) {
-    try {
-    var lat=Number($w('#latEdit').value);
-    var lng=Number($w('#lngEdit').value);
-    var msg={
-        type:"addloc",
-        label:$w('#locNameEdit').value,
-        value:{lat: lat, lng: lng}
-        }
-        console.log("addLocBtn_click: lat/long"+lat+"/"+lng)
-        $w("#googleMapHTML").postMessage(msg);        
-    }
-    catch (err){
-
-    }
 }
 
 async function fillTrailRgnDrpDn() {
@@ -183,4 +162,23 @@ export function trailNameDrpDn_change(event) {
 
 export function trailRgnDrpDn_change(event) {
     doTrailRgn_change();
+}
+
+function doTest(){
+    let lat=41.37613/360*Math.PI*2;
+    let lon=-111.889448/360*Math.PI*2;
+    let lastlat=41.379655/360*Math.PI*2;
+    let lastlon=-111.899291/360*Math.PI*2;
+    let latdiff=lat-lastlat; let londiff=lon-lastlon;
+    let a=0,c=0,d=0;
+    try{
+        console.log("doTest sin(latdiff) "+Math.sin(latdiff/2)**2+"; sin(londiff) "+Math.sin(londiff)**2);
+        a = (Math.sin(latdiff/2))**2 + Math.cos(lat) * Math.cos(lastlat) * (Math.sin(londiff/2))**2;
+        c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a) )
+        d = 3961 * c; // (where 3961 miles is the radius of the Earth) 
+        console.log("doTest found a,c,d"+a+","+c+","+d+",");
+    } catch(err){
+        console.log("doTest caught math error "+err);
+    }
+
 }
