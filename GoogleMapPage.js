@@ -1,12 +1,18 @@
 import wixData from 'wix-data';
 import {roughSizeOfObject} from 'public/misc.js'
+import {groomReportTable} from 'public/GroomReport.js' 
 
 // For full API documentation, including code examples, visit https://wix.to/94BuAAs
 
+let _grmRpt = null;
 let _currTrailName="";
 let _currTrailList = [];
+let _groomTableData = [];
+let _dateClr = "";
 $w.onReady(function () {
     console.log("onReady")
+    queryGroomReportTable();
+    console.log("onReady # entries in groomTable "+_groomTableData.length)
     doTest();
 	$w("#googleMapHTML").onMessage((event)=>{
 
@@ -26,7 +32,48 @@ $w.onReady(function () {
     fillTrailRgnDrpDn();
 });
 
+async function queryGroomReportTable(){
+    _grmRpt = new groomReportTable("All", 720, 1);
+    let newRws = await _grmRpt._skiGroomingTableQuery();
+    _groomTableData = newRws.sort(function (a, b) {
+        var rgnA = a.region.toUpperCase();
+        var rgnB = b.region.toUpperCase();
+        var nameA = a.trailName.toUpperCase(); // ignore upper and lowercase
+        var nameB = b.trailName.toUpperCase(); // ignore upper and lowercase
+        var dateA = a.fullDate;
+        var dateB = b.fullDate;
+        if (dateA < dateB) {
+            return 1;
+        }
+        if (dateA > dateB) {
+            return -1;
+        }
+        if (rgnA < rgnB) {
+            return -1;
+        }
+        if (rgnA > rgnB) {
+            return 1;
+        }
+        // viewSort and region must be equal
+        return 0;
+    });
+}
+
 export function sendTrack(name,xml){
+    var today = new Date();
+    var time_ms = today.getTime();
+    var bkgClr = "";
+    let trkDate="";
+    let tdiff = 0;
+    for (var i=0;i<_groomTableData.length;i++){
+        if (_groomTableData[i]["trailName"].toLowerCase()===name.toLowerCase()){
+            console.log("sendTrack: found trail "+name)
+            tdiff = time_ms - _groomTableData[i]["fullDate"].getTime();
+            trkDate=_groomTableData[i]["groomTime"];
+            bkgClr=_grmRpt.getDateColor(_groomTableData[i]["fullDate"])
+            break;
+        }
+    }
     var sz = roughSizeOfObject(xml);
     console.log("sendTrack: xml length "+xml.length+"; rough size "+sz)
     var kys=Object.keys(xml);
@@ -40,11 +87,12 @@ export function sendTrack(name,xml){
     }
     // var parser = new DOMParser();
     // var xmlDoc = parser.parseFromString(xml,"text/xml");
+    console.log("sendTrack: bkg "+bkgClr+"; trkDate "+trkDate)
 
     var msg={
         type:"addtrack",
         label:_currTrailName,
-        value:xml
+        value:{xml:xml,color:bkgClr,grmDate:trkDate}
         }
         $w("#googleMapHTML").postMessage(msg);        
 }

@@ -59,7 +59,7 @@
             }
             if (event.data.type==="addtrack"){
               parser = new DOMParser();
-              xmlDoc = parser.parseFromString(event.data.value,"text/xml");
+              xmlDoc = parser.parseFromString(event.data.value.xml,"text/xml");
               if (pointarray.length>2)
                 polylinetrk.setMap(null);
               if (trailmarker!==null){
@@ -136,6 +136,7 @@
                   contentString=contentString.concat(' miles (');
                   contentString=contentString.concat((1.609344*trailLgth).toFixed(2).toString());
                   contentString=contentString.concat(' km)');
+                  contentString=contentString.concat('<br><div style="'+event.data.value.color+'">Last Groom: '+event.data.value.grmDate+'<div>');
                   contentString=contentString.concat('</p></div></div>');
               console.log("addTrack info: "+contentString);
 

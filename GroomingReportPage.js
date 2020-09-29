@@ -20,7 +20,7 @@ $w.onReady(function () {
 
 	fillTrailRgnDrpDn();
 	console.log("onReady report options length " + $w('#reportOptionsRadio').options.length + "; first " + $w('#reportOptionsRadio').options[0].label);
-	let hoursopts = [{ label: "1 Week", value: "168" },
+	let hoursopts = [{ label: "1  Month", value: "720" },{ label: "1 Week", value: "168" },
 		{ label: "48 Hours", value: "48" },
 		{ label: "36 Hours", value: "36" },
 		{ label: "24 Hours", value: "24" },
@@ -87,7 +87,7 @@ async function fillGrmRptTbl() {
 	let ndx = $w('#reportOptionsRadio').selectedIndex;
 	let grmRptClass = new groomReportTable(rptrgn, $w('#grmRptHours').value, ndx);
 	var tblhtml=await grmRptClass.fillGrmRptTbl();
-	console.log("fillGrmRptTbl html: "+tblhtml)
+	// console.log("fillGrmRptTbl html: "+tblhtml)
 	if (tblhtml.length>1)
 		$w('#grmRptTable').html = tblhtml;
 

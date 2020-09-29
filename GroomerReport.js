@@ -33,6 +33,13 @@ export class groomReportTable {
 		let mchfltr = '1';
 		if (this.reportType === 2)
 			mchfltr = '0'
+		var dateStrOpts = {
+			month: 'short',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit'
+		};
+
 		console.log("_skiGroomingTableQuery starting...")
         var trlDnItems = [];
 		try {
@@ -44,15 +51,68 @@ export class groomReportTable {
 				.ge("groomMachine", mchfltr)
 				.find();
 			trlDnItems = results.items;
-			if (undefined === trlDnItems)
+			if (undefined === trlDnItems){
 				console.log("_skiGroomingTableQuery found NO results!")
+				return [];
+			}
 			else
 				console.log("_skiGroomingTableQuery retured " + trlDnItems.length)
-			return trlDnItems;
 		} catch (err) {
 			console.log("_skiGroomingTableQuery caught error " + err)
+			return [];
 		}
-        return trlDnItems;
+		if ((trlDnItems === undefined) || (trlDnItems.length < 1)) {
+			console.log("_skiGroomingTableQuery exiting with no results from query")
+			return [];
+		}
+		let timStr = ""
+		let newRws = []
+		for (var j = 0; j < trlDnItems.length; j++) {
+			if (trlDnItems[j] === undefined)
+				continue;
+			if ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"])) {
+				let machtxt = "None";
+				if (trlDnItems[j]["groomMachine"] === '1') {
+					machtxt = "Cat"
+				}
+				if (trlDnItems[j]["groomMachine"] === '3') {
+					machtxt = "Cat&Sled"
+				}
+				if (trlDnItems[j]["groomMachine"] === '2') {
+					machtxt = "Sled"
+				}
+				timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
+				newRws.push({
+					"trailName": trlDnItems[j]["trailRef"]["title"],
+					"fullDate": trlDnItems[j]["groomDate"],
+					"groomTime": timStr,
+					"classicSet": trlDnItems[j]["classicSet"],
+					"groomMachNbr": trlDnItems[j]["groomMachine"],
+					"groomMach": machtxt,
+					"trailCondx": trlDnItems[j]["trailCondition"],
+					"grmrCmnt": trlDnItems[j]["groomerComment"],
+					"grmr": trlDnItems[j]["groomerRef"]["title"],
+					'region': trlDnItems[j]["trailRef"]["trailRegion"],
+					'priority': trlDnItems[j]["trailRef"]["reportPriority"],
+					'viewSort': trlDnItems[j]["trailRef"]['viewSort']
+				})
+			}
+		}
+        return newRws;
+	}
+
+	getDateColor(rowDate){
+		var today = new Date();
+		var time_ms = today.getTime();
+		var tdiff = time_ms - rowDate.getTime();
+		let colorRed = "background-color:rgb(250,0,0)"
+		let colorGreen = "background-color:rgb(0,250,0)"
+		let colorYellow = "background-color:rgb(200,200,0)"
+		if (tdiff < 18 * 3600000)
+			return colorGreen;
+		if (tdiff < 24 * 3600000)
+			return colorYellow;
+		return colorRed;
 	}
 
 	async _skiGroomCommentTableQuery() {
@@ -98,21 +158,19 @@ export class groomReportTable {
 				fntszsimple = "width:100%;font-size:12px";
 			}
 		}
-		var today = new Date();
-		var time_ms = today.getTime();
 		let tblsrc = "";
 		if (this.reportType === 2) {
 			tblsrc = '<table style="' + fntszfull;
 			tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
 	border: 1px solid black;border-collapse: collapse;">\
-  	<tr style="background-color:rgb(250,250,250);border: 1px solid black;border-collapse: collapse;">\
-		<th style="text-align: left">Trail Name</th> \
-		<th style="text-align: left">Time</th> \
-		<th style="text-align: left">ClscSet</th> \
-		<th style="text-align: left">Mach</th> \
-		<th style="text-align: left">Condition</th> \
-		<th style="text-align: left">Comment</th> \
-		<th style="text-align: left">Groomer</th> \
+  	<tr style="background-color:rgb(250,250,250);border: 1px solid black;">\
+		<th style="text-align: left;border: 1px solid black;">Trail Name</th> \
+		<th style="text-align: left;border: 1px solid black;">Time</th> \
+		<th style="text-align: left;border: 1px solid black;">ClscSet</th> \
+		<th style="text-align: left;border: 1px solid black;">Mach</th> \
+		<th style="text-align: left;border: 1px solid black;">Condition</th> \
+		<th style="text-align: left;border: 1px solid black;">Comment</th> \
+		<th style="text-align: left;border: 1px solid black;">Groomer</th> \
   	</tr>');
 		} else {
 			tblsrc = '<table style="width:60%;margin-left:auto;margin-right:auto;' + fntszsimple;
@@ -126,44 +184,38 @@ export class groomReportTable {
 		}
 		let rwHtml = ""
 		let rgnHtml = ""
-		let colorRed = "background-color:rgb(250,0,0)"
-		let colorGreen = "background-color:rgb(0,250,0)"
-		let colorYellow = "background-color:rgb(200,200,0)"
 		if (srtRws.length < 1) {
-			tblsrc = tblsrc.concat('<tr style="' + colorRed + ';border: 1px solid black;border-collapse: collapse;">\
+			tblsrc = tblsrc.concat('<tr style="background-color:rgb(180,0,0);border: 1px solid black;border-collapse: collapse;">\
 			<td colspan="4">No Data!! Try different region or longer duration</td>\
 		</tr>');
 			tblsrc = tblsrc.concat('</table>');
 
 		} else {
 			for (var i = 0; i < srtRws.length; i++) {
-				var tdiff = time_ms - srtRws[i]["fullDate"].getTime();
 				rgnHtml = ""
 				rwHtml = ""
-				if ((this.reportType > 0) && ((this.region === "ALL") && (lstRgn !== srtRws[i]["region"]))) {
+				if ((this.reportType > 0) && ((this.region.toLowerCase() === "all") && (lstRgn !== srtRws[i]["region"]))) {
+					// console.log("buildGrmRptTable found region "+srtRws[i]["region"]);
 					rgnHtml = '<tr style="text-align:center;background-color:rgb(255,255,255)">'
 					rgnHtml = rwHtml.concat('<td colspan="3" style="text-align:center;background-color:rgb(255,255,255)">' + srtRws[i]["region"] + '</td>')
+				} else {
+					// console.log("buildGrmRptTable bypass region "+srtRws[i]["region"]+"; lstRgn "+lstRgn+"; item # "+i);
 				}
 				// console.log("buildGrmRptTable trail: " + srtRws[i]["trailName"] + "(" + thisTrail + ")" + "; this.reportType: " + this.reportType + "; priority: " + srtRws[i]["priority"] + "; mach: " + srtRws[i]["groomMachNbr"]);
 				if (((this.reportType === 0) && (srtRws[i]["priority"] === 1) && (thisTrail !== srtRws[i]["trailName"])) ||
 					(this.reportType === 2) ||
 					((this.reportType === 1) && (thisTrail !== srtRws[i]["trailName"]))) {
 					// console.log("buildGrmRptTable OK: " + srtRws[i]["trailName"]);
-					if (tdiff < 15 * 3600000) {
-						rwHtml = rwHtml.concat('<tr style="' + colorGreen + ';border: 1px solid black;border-collapse: collapse;">')
-					} else if (tdiff < 24 * 3600000) {
-						rwHtml = rwHtml.concat('<tr style="' + colorYellow + ';border: 1px solid black;border-collapse: collapse;">')
-					} else {
-						rwHtml = rwHtml.concat('<tr style="' + colorRed + ';border: 1px solid black;border-collapse: collapse;">')
-					}
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailName"] + '</td>')
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomTime"] + '</td>')
-					rwHtml = rwHtml.concat('<td>' + srtRws[i]["classicSet"] + '</td>')
+					var rowClr=this.getDateColor(srtRws[i]["fullDate"])
+					rwHtml = rwHtml.concat('<tr style="' + rowClr + ';border: 1px solid black;border-collapse: collapse;">')
+					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailName"] + '</td>')
+					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomTime"] + '</td>')
+					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["classicSet"] + '</td>')
 					if (this.reportType === 2) {
-						rwHtml = rwHtml.concat('<td>' + srtRws[i]["groomMach"] + '</td>')
-						rwHtml = rwHtml.concat('<td>' + srtRws[i]["trailCondx"] + '</td>')
-						rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmrCmnt"] + '</td>')
-    					rwHtml = rwHtml.concat('<td>' + srtRws[i]["grmr"] + '</td>')
+						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomMach"] + '</td>')
+						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailCondx"] + '</td>')
+						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["grmrCmnt"] + '</td>')
+    					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["grmr"] + '</td>')
 					}
 					if (rgnHtml.length > 5) {
 						tblsrc = tblsrc.concat(rgnHtml + '</tr>')
@@ -182,62 +234,14 @@ export class groomReportTable {
 	async fillGrmRptTbl() {
 		if (this.region.length < 2)
 			return;
-		var dateStrOpts = {
-			month: 'short',
-			day: '2-digit',
-			hour: '2-digit',
-			minute: '2-digit'
-		};
 		let rtrnHtml = "";
 		this._getWinInfo();
 		try {
-			let trlDnItems = await this._skiGroomingTableQuery();
-			// this._skiGroomingTableQuery().then(rtrnItms => {
-			//     trlDnItems = rtrnItms;
-			// });
-			if ((trlDnItems === undefined) || (trlDnItems.length < 1)) {
-				console.log("fillgrmRptTable exiting with no results from query")
-				return rtrnHtml;
-			}
-			console.log("fillgrmRptTable results from query: " + trlDnItems.length);
-			let timStr = ""
-			let newRws = []
-			console.log("fillGrmRptTbl items lgth " + trlDnItems.length + "; first item: " + trlDnItems[1]["trailRef"]["trailRegion"])
-			for (var j = 0; j < trlDnItems.length; j++) {
-				if (trlDnItems[j] === undefined)
-					continue;
-				if ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"])) {
-					let machtxt = "None";
-					if (trlDnItems[j]["groomMachine"] === '1') {
-						machtxt = "Cat"
-					}
-					if (trlDnItems[j]["groomMachine"] === '3') {
-						machtxt = "Cat&Sled"
-					}
-					if (trlDnItems[j]["groomMachine"] === '2') {
-						machtxt = "Sled"
-					}
-					timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
-					newRws.push({
-						"trailName": trlDnItems[j]["trailRef"]["title"],
-						"fullDate": trlDnItems[j]["groomDate"],
-						"groomTime": timStr,
-						"classicSet": trlDnItems[j]["classicSet"],
-						"groomMachNbr": trlDnItems[j]["groomMachine"],
-						"groomMach": machtxt,
-						"trailCondx": trlDnItems[j]["trailCondition"],
-						"grmrCmnt": trlDnItems[j]["groomerComment"],
-						"grmr": trlDnItems[j]["groomerRef"]["title"],
-						'region': trlDnItems[j]["trailRef"]["trailRegion"],
-						'priority': trlDnItems[j]["trailRef"]["reportPriority"],
-						'viewSort': trlDnItems[j]["trailRef"]['viewSort']
-					})
-				}
-			}
+			let newRws = await this._skiGroomingTableQuery();
 			console.log("fillgrmRptTable newRws " + newRws.length)
 			if (newRws.length < 1) {
 				console.log("fillgrmRptTable exiting with empty newRws")
-				return;
+				return this.buildGrmRptTable([]);
 			}
 			var sortRows = newRws.sort(function (a, b) {
 				var srtA = a.viewSort;
