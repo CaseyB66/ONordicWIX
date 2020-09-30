@@ -11,7 +11,6 @@ let _groomTableData = [];
 let _dateClr = "";
 $w.onReady(function () {
     console.log("onReady")
-    queryGroomReportTable();
     console.log("onReady # entries in groomTable "+_groomTableData.length)
     doTest();
 	$w("#googleMapHTML").onMessage((event)=>{
@@ -64,6 +63,7 @@ export function sendTrack(name,xml){
     var time_ms = today.getTime();
     var bkgClr = "";
     let trkDate="";
+    let skiDffclt={color:"",descr:""};
     let tdiff = 0;
     for (var i=0;i<_groomTableData.length;i++){
         if (_groomTableData[i]["trailName"].toLowerCase()===name.toLowerCase()){
@@ -71,6 +71,7 @@ export function sendTrack(name,xml){
             tdiff = time_ms - _groomTableData[i]["fullDate"].getTime();
             trkDate=_groomTableData[i]["groomTime"];
             bkgClr=_grmRpt.getDateColor(_groomTableData[i]["fullDate"])
+            skiDffclt=_grmRpt.getSkiDifficultyObject(_groomTableData[i]['skiDifficulty']);
             break;
         }
     }
@@ -92,12 +93,14 @@ export function sendTrack(name,xml){
     var msg={
         type:"addtrack",
         label:_currTrailName,
-        value:{xml:xml,color:bkgClr,grmDate:trkDate}
+        value:{xml:xml,color:bkgClr,grmDate:trkDate,skiDifficulty:skiDffclt}
         }
         $w("#googleMapHTML").postMessage(msg);        
 }
 
 async function fillTrailRgnDrpDn() {
+    if (_groomTableData.length<1)
+        await queryGroomReportTable();
     try {
         const results = await wixData.query("skiTrailsTable")
             .limit(20)

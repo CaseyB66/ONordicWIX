@@ -27,15 +27,22 @@
       var contentString="";
       var polylinetrk=null;
       var trailmarker=null;
+      var nordicmarker=null;
       var pointarray = [];
       var deg_rads = (2*Math.PI)/360.0;
-      var initCtr={lat: 41.371089, lng: -111.902241}
+      var initCtr={lat: 41.37527, lng: -111.908221}
       function initMap() {
         console.log("initmap")
         map = new google.maps.Map(document.getElementById("map"), {
           zoom: 14,
           center: initCtr,
           mapTypeId: "terrain",
+        });
+        nordicmarker = new google.maps.Marker({
+            position: { lat: 41.371011, lng: -111.902188},
+            map: map,
+            title: "Nordic\nCenter",
+            label: "Nordic\nCenter"
         });
         var msg={
           "type":"init",
@@ -129,15 +136,17 @@
               contentString = '<div id="content">'+
                   '<div id="siteNotice">'+
                   '</div>'+
-                  '<h3 id="firstHeading" class="firstHeading">'+event.data.label+'</h3>'+
-                  '<div id="bodyContent">'+
-                  '<p>Trail Length: ';
+                  '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label+'</b><br><br>Trail Length: ';
                   contentString=contentString.concat(trailLgth.toFixed(2).toString());
                   contentString=contentString.concat(' miles (');
                   contentString=contentString.concat((1.609344*trailLgth).toFixed(2).toString());
                   contentString=contentString.concat(' km)');
-                  contentString=contentString.concat('<br><div style="'+event.data.value.color+'">Last Groom: '+event.data.value.grmDate+'<div>');
-                  contentString=contentString.concat('</p></div></div>');
+                  contentString=contentString.concat('<div style="line-height:100%;'+
+                    event.data.value.color+'">Last Groom: '+
+                    event.data.value.grmDate+'<div>');
+                  contentString=contentString.concat('<div style="line-height:100%;'+event.data.value.skiDifficulty.color+'">');
+                  contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+                  contentString=contentString.concat('</div></div>');
               console.log("addTrack info: "+contentString);
 
               var infowindow = new google.maps.InfoWindow({
@@ -146,7 +155,8 @@
               trailmarker = new google.maps.Marker({
                   position: { lat: meanlat/deg_rads, lng: meanlon/deg_rads},
                   map: map,
-                  title: event.data.label
+                  title: event.data.label,
+                  label: event.data.label
               });
               google.maps.event.addListener(trailmarker, 'click', function() {
                 infowindow.open(map,trailmarker);

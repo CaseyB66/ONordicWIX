@@ -94,20 +94,47 @@ export class groomReportTable {
 					"grmr": trlDnItems[j]["groomerRef"]["title"],
 					'region': trlDnItems[j]["trailRef"]["trailRegion"],
 					'priority': trlDnItems[j]["trailRef"]["reportPriority"],
-					'viewSort': trlDnItems[j]["trailRef"]['viewSort']
+					'viewSort': trlDnItems[j]["trailRef"]['viewSort'],
+					'skiDifficulty':trlDnItems[j]['trailRef']['skiDifficulty']
 				})
 			}
 		}
         return newRws;
 	}
 
+	getSkiDifficultyObject(dffclty){
+		let color4 = "background-color:rgb(250,0,0)";
+		let color5 = "background-color:rgb(200,0,0)";
+		let color1 = "background-color:rgb(0,250,0)";
+		let color2 = "background-color:rgb(100,230,0)";
+		let color3 = "background-color:rgb(200,200,0)";
+		let rtrn={color:color1,descr:"Easy"};
+		if (dffclty===2){
+			rtrn.color=color2;
+			rtrn.descr="Easy-Moderate";
+		}
+		if (dffclty===3){
+			rtrn.color=color3;
+			rtrn.descr="Moderate";
+		}
+		if (dffclty===4){
+			rtrn.color=color4;
+			rtrn.descr="Difficult";
+		}
+		if (dffclty===5){
+			rtrn.color=color5;
+			rtrn.descr="Very-Difficult";
+		}
+	return rtrn;
+	}
+
 	getDateColor(rowDate){
 		var today = new Date();
 		var time_ms = today.getTime();
 		var tdiff = time_ms - rowDate.getTime();
-		let colorRed = "background-color:rgb(250,0,0)"
-		let colorGreen = "background-color:rgb(0,250,0)"
-		let colorYellow = "background-color:rgb(200,200,0)"
+		let colorRed = "background-color:rgb(250,0,0)";
+		let colorGreen = "background-color:rgb(0,250,0)";
+		let colorYellow = "background-color:rgb(200,200,0)";
 		if (tdiff < 18 * 3600000)
 			return colorGreen;
 		if (tdiff < 24 * 3600000)
