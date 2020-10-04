@@ -9,14 +9,7 @@ let _winWid = 0;
 
 $w.onReady(function () {
 	$w('#scrnResltnTxt').hide();
-	$w('#hiddenGroomRptLgnd').hide();
 	$w('#genCmntText').hide();
-	let tbllgndhtml = '<p style="background-color:rgb(230,200,200);color:rgb(0,0,0);border: 2px solid red;\
-  border-radius: 8px;padding: 10px;">';
-	tbllgndhtml = tbllgndhtml.concat("ClscSet=Classic Tracks Set; Mach=groomer machine used")
-	tbllgndhtml = tbllgndhtml.concat("</p>")
-
-	$w('#hiddenGroomRptLgnd').html = tbllgndhtml;
 
 	fillTrailRgnDrpDn();
 	console.log("onReady report options length " + $w('#reportOptionsRadio').options.length + "; first " + $w('#reportOptionsRadio').options[0].label);
@@ -36,13 +29,16 @@ $w.onReady(function () {
 	$w('#grmRptDateTxt').html = htmltxt;
 	$w('#reportOptionsRadio').options = [{ label: "Brief", value: '0' }, { label: "All Trails", value: '1' }, { label: "Full", value: '2' }]
 	$w('#reportOptionsRadio').selectedIndex = 0;
+	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Bike", value: 'bike' }]
+	$w('#trailTypeRadio').selectedIndex = 0;
 	$w('#grmRptTable').html = "";
 });
 
 function fillTrailRgnDrpDn() {
+	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
 	wixData.query("skiTrailsTable")
 		.limit(20)
-		.eq("trailType", "ski")
+		.eq("trailType", trType)
 		.ascending("viewSort")
 		.find()
 		.then(results => {
@@ -73,6 +69,7 @@ export function grmRptTrailRgnDrpDn_change(event) {
 }
 
 async function fillGrmRptTbl() {
+	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];	
 	let rptrgn = $w('#grmRptTrailRgnDrpDn').value;
 	if (rptrgn.length < 2)
 		return;
@@ -86,12 +83,12 @@ async function fillGrmRptTbl() {
 	// rgn = "South", hrs = 24, rprtTyp = 0
 	let ndx = $w('#reportOptionsRadio').selectedIndex;
 	let grmRptClass = new groomReportTable(rptrgn, $w('#grmRptHours').value, ndx);
-	var tblhtml=await grmRptClass.fillGrmRptTbl();
+	var tblhtml=await grmRptClass.fillGrmRptTbl(trType);
 	// console.log("fillGrmRptTbl html: "+tblhtml)
 	if (tblhtml.length>1)
 		$w('#grmRptTable').html = tblhtml;
 
-	var sortCmnt = await grmRptClass._skiGroomCommentTableQuery();
+	var sortCmnt = await grmRptClass._skiGroomCommentTableQuery(trType);
 
 	if ((sortCmnt.length > 0) && (sortCmnt[0]["groomDate"] > grmRptClass.fltrDate)) {
 		timStr = sortCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
@@ -114,24 +111,6 @@ export function grmRptHours_change(event) {
 	fillGrmRptTbl();
 }
 
-export function grmRptTable_mouseIn(event) {
-	$w('#hiddenGroomRptLgnd').show("fade");
-}
-
-export function grmRptTable_mouseOut(event) {
-	$w('#hiddenGroomRptLgnd').hide("fade");
-}
-
-export function grmRptTable_click(event) {
-	if (wixWindow.formFactor === "Mobile" || wixWindow.formFactor === "Tablet") {
-		if ($w('#hiddenGroomRptLgnd').hidden) {
-			$w('#hiddenGroomRptLgnd').show("fade");
-		} else {
-			$w('#hiddenGroomRptLgnd').hide("fade");
-		}
-	}
-}
-
 export function scrnResltnTxt_click(event) {
 	$w('#scrnResltnTxt').hide();
 
@@ -141,6 +120,10 @@ export function reportOptionsRadio_change(event) {
 	fillGrmRptTbl();
 }
 
-export function hiddenGroomRptLgnd_click(event) {
-	$w('#hiddenGroomRptLgnd').hide();
+
+export function trailTypeRadio_change(event) {
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here: 
+	fillTrailRgnDrpDn();
+	fillGrmRptTbl()
 }

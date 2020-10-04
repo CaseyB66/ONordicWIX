@@ -29,7 +29,7 @@ export class groomReportTable {
 		this._winWid = wininfo.window.width;
 	}
 
-	async _skiGroomingTableQuery() {
+	async _skiGroomingTableQuery(trType) {
 		let mchfltr = '1';
 		if (this.reportType === 2)
 			mchfltr = '0'
@@ -70,16 +70,22 @@ export class groomReportTable {
 		for (var j = 0; j < trlDnItems.length; j++) {
 			if (trlDnItems[j] === undefined)
 				continue;
-			if ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"])) {
+			if ((trlDnItems[j]["trailRef"]["trailType"]===trType) && ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"]))) {
 				let machtxt = "None";
 				if (trlDnItems[j]["groomMachine"] === '1') {
-					machtxt = "Cat"
+					if (trType==="ski")
+						machtxt = "Cat";
+					else
+						machtxt = "Tires"
 				}
 				if (trlDnItems[j]["groomMachine"] === '3') {
 					machtxt = "Cat&Sled"
 				}
 				if (trlDnItems[j]["groomMachine"] === '2') {
-					machtxt = "Sled"
+					if (trType==="ski")
+						machtxt = "Sled";
+					else
+						machtxt = "Drag"
 				}
 				timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 				newRws.push({
@@ -142,11 +148,12 @@ export class groomReportTable {
 		return colorRed;
 	}
 
-	async _skiGroomCommentTableQuery() {
+	async _skiGroomCommentTableQuery(trType) {
 		try {
 			const results = await wixData.query("skiGroomCommentTable")
 				.include("groomerRef")
 				.limit(100)
+				.eq("trailType",trType)
 				.ge("groomDate", this.fltrDate)
 				.find();
 			var cmntItems = results.items;
@@ -258,13 +265,13 @@ export class groomReportTable {
 		return tblsrc;
 	}
 
-	async fillGrmRptTbl() {
+	async fillGrmRptTbl(trType) {
 		if (this.region.length < 2)
 			return;
 		let rtrnHtml = "";
 		this._getWinInfo();
 		try {
-			let newRws = await this._skiGroomingTableQuery();
+			let newRws = await this._skiGroomingTableQuery(trType);
 			console.log("fillgrmRptTable newRws " + newRws.length)
 			if (newRws.length < 1) {
 				console.log("fillgrmRptTable exiting with empty newRws")

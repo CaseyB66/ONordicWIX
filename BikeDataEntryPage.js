@@ -1,4 +1,5 @@
 // For full API documentation, including code examples, visit https://wix.to/94BuAAs
+// For full API documentation, including code examples, visit https://wix.to/94BuAAs
 import wixData from 'wix-data';
 import wixSearch from 'wix-search';
 
@@ -115,7 +116,7 @@ $w.onReady(function () {
 });
 
 function hideTrailLabels(){
-	for (var i=0;i<__nrEntryRows;i++){
+	for (var i=4;i<__nrEntryRows;i++){
 		let tmpStr=('#trGrp'+(i+1));
 		// console.log("hideTrailLabels "+tmpStr)
 		$w(tmpStr).hide();
@@ -140,7 +141,6 @@ function enableEntryFields(_boolVal){
 		$w('#trailGroomTime').enable();
 		$w('#trailConditionDrpDn').enable();
 		$w('#removeTrailCondxBtn').enable();
-		$w('#classicRadio1').enable();
 		$w('#submitBtn').enable();
 		$w('#grmMachRadio1').enable();
 		$w('#commentEdit').enable();
@@ -150,7 +150,6 @@ function enableEntryFields(_boolVal){
 		$w('#trailGroomTime').disable();
 		$w('#trailConditionDrpDn').disable();
 		$w('#removeTrailCondxBtn').disable();
-		$w('#classicRadio1').disable();
 		$w('#submitBtn').disable();
 		$w('#grmMachRadio1').disable();
 		$w('#commentEdit').disable();
@@ -269,7 +268,7 @@ async function fillGroomersDrpDn(){
 	try {
 		const results = await wixData.query("groomersTable")
 		.limit(20)
-		.eq("trailType","ski")
+		.eq("trailType","bike")
 		.or(wixData.query("groomersTable").eq("trailType","both"))
 		.find();
 		_groomerList = results.items;
@@ -293,7 +292,7 @@ async function fillGroomersDrpDn(){
 function fillTrailRgnDrpDn(){
 	wixData.query("skiTrailsTable")
 	.limit(20)
-	.eq("trailType","ski")
+	.eq("trailType","bike")
 	.find()
 	.then(results =>{
 		const rgns = getUniqueTrailRegions(results.items);
@@ -318,7 +317,7 @@ function fillTrailRgnDrpDn(){
 function fillTrailConditionDropDn(){
 		wixData.query("trailCondxTable")
 			.limit(50)
-			.eq("trailType","ski")
+			.eq("trailType","bike")
 			.or(wixData.query("trailCondxTable").eq("trailType","both"))
 			.ascending("condxSort")
 			.find()
@@ -339,7 +338,7 @@ async function fillTrailNameDrpDn(rgn) {
 		try {
 			const results = await wixData.query("skiTrailsTable")
 				.limit(100)
-				.eq("trailType","ski")
+				.eq("trailType","bike")
 				.ascending("viewSort")
 				.find();
 				const uniqueTitles = getUniqueTrailNames(results.items);
@@ -357,7 +356,7 @@ async function fillTrailNameDrpDn(rgn) {
 				// Get the max possible results from the query
 				.limit(100)
 				.eq("trailRegion", rgn)
-				.eq("trailType","ski")
+				.eq("trailType","bike")
 				.ascending("viewSort")
 				.find();
 				// Call the function that creates a list of unique titles
@@ -378,7 +377,7 @@ async function fillTrailNameDrpDn(rgn) {
 	// console.log("fillTrailNameDrpDn for region"+rgn+trllst)
 	hideTrailLabels();
 	for (var i=0;i<_trailList.length;i++){
-		setTrailLabel(_trailList[i].title, i+1)
+		setTrailLabel(_trailList[i].title, i+5)
 		// console.log("trailNameDrpDn trail item = " + + " currTrail "+_currTrailName)
 	}
 
@@ -563,7 +562,7 @@ export async function submitBtn_click(event) {
 	let clscRd=""
 	let grmrRd=""
 	let thisTrail=""
-	for (var i = 0; i < __nrEntryRows; i++) {
+	for (var i = 4; i < __nrEntryRows; i++) {
 		trlStr = ('#trailLabel'+(i+1));
 		grpStr = ('#trGrp' + (i + 1));
 		let trlNdx=$w(trlStr).selectedIndices;
@@ -612,7 +611,7 @@ export async function submitBtn_click(event) {
 			toInsert = {
 				"title": $w('#genCmntEdit').value,
 				"groomDate": trlGrmDate,
-				"trailType": "ski",
+				"trailType": "bike",
 				"groomerRef": groomerId
 			};
 			let results = await wixData.insert("skiGroomCommentTable", toInsert);
@@ -663,20 +662,6 @@ export function groomMachRadioALL_change(event) {
 		if (!$w(grpStr).hidden){
 			let tmpStr = ('#grmMachRadio'+(i+1));
 			console.log("groomMachRadioALL_change setting "+tmpStr+", to: "+curVal)
-			$w(tmpStr).value=curVal;
-		}
-	}
-}
-
-export function classicRadioALL_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-	let curVal=$w('#classicRadioALL').value;
-	for (var i=0;i<__nrEntryRows;i++){
-		let grpStr=('#trGrp'+(i+1));
-		if (!$w(grpStr).hidden){
-			let tmpStr = ('#classicRadio'+(i+1));
-			console.log("classicRadioALL_change setting "+tmpStr+", to: "+curVal)
 			$w(tmpStr).value=curVal;
 		}
 	}
