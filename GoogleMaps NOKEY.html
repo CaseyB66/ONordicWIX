@@ -21,7 +21,7 @@
         border: 3px solid #73AD21;
       }
       html, body {
-        height: 600px; width: 95%;
+        height: auto; width: 95%;
         left: 10px;
         margin: 0;
         padding: 0;
@@ -41,7 +41,7 @@
         border: 3px solid #73AD21;
       }
       html, body {
-        height: 600px; width: 95%;
+        height: auto; width: 95%;
         margin: 0;
         padding: 0;
       }
@@ -62,7 +62,7 @@
         border: 3px solid #73AD21;
       }
       html, body {
-        height: 400px; width: 95%;
+        height: auto; width: 95%;
         margin: 0;
         padding: 0;
       }
@@ -84,7 +84,7 @@
         border: 3px solid #73AD21;
       }
       html, body {
-        height: 400px; width: 400px;
+        height: auto; width: 400px;
         margin: 0;
         padding: 0;
       }
@@ -92,7 +92,7 @@
   	</style>
   </head>
   <body onload="ready()"> 
-    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=API_KET&callback=initMap"></script>
+    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
     <script type="text/javascript">
       const mintrackpointdelta = 0.0001;
       var map;
@@ -251,7 +251,11 @@
                     event.data.value.color+'">Last Groom: '+
                     event.data.value.grmDate+'<div>');
                   contentString=contentString.concat('<div style="line-height:100%;'+event.data.value.skiDifficulty.color+'">');
-                  contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+              		if (event.data.value.skiDifficulty==="ski"){
+	                  contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+                  }else{
+                    contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+	                }
                   contentString=contentString.concat('</div></div>');
               console.log("addTrack info: "+contentString);
 
@@ -299,7 +303,8 @@
     </script>
     <div>
       <p id="screenp"></p>
-      <p >Pick  trail from the drop-down. Then click on the trail icon for more detail</p>
+      <p>Pick trail from the drop-down. Then click on the trail icon for more
+        detail</p>
     </div>
     <div id="map"></div>
   </body>

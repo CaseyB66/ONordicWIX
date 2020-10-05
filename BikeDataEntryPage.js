@@ -1,9 +1,8 @@
-// For full API documentation, including code examples, visit https://wix.to/94BuAAs
-// For full API documentation, including code examples, visit https://wix.to/94BuAAs
 import wixData from 'wix-data';
 import wixSearch from 'wix-search';
 
 const __nrEntryRows = 12;
+const __fstEntryRow = 5;
 
 var getKeys = function(obj){
    var keys = [];
@@ -116,7 +115,7 @@ $w.onReady(function () {
 });
 
 function hideTrailLabels(){
-	for (var i=4;i<__nrEntryRows;i++){
+	for (var i=__fstEntryRow-1;i<__nrEntryRows;i++){
 		let tmpStr=('#trGrp'+(i+1));
 		// console.log("hideTrailLabels "+tmpStr)
 		$w(tmpStr).hide();
@@ -142,7 +141,6 @@ function enableEntryFields(_boolVal){
 		$w('#trailConditionDrpDn').enable();
 		$w('#removeTrailCondxBtn').enable();
 		$w('#submitBtn').enable();
-		$w('#grmMachRadio1').enable();
 		$w('#commentEdit').enable();
 	}
 	else {
@@ -151,7 +149,6 @@ function enableEntryFields(_boolVal){
 		$w('#trailConditionDrpDn').disable();
 		$w('#removeTrailCondxBtn').disable();
 		$w('#submitBtn').disable();
-		$w('#grmMachRadio1').disable();
 		$w('#commentEdit').disable();
 	}
 }
@@ -167,16 +164,11 @@ function clearEntryFields(){
 		_setElmntsChng("Condx", true);
 	}
 	_setElmntsChng("Mach", true);
-	if ($w('#grmMachRadio1').value != '0'){
-		_setElmntsChng("Mach", true);
-	}
 	_setElmntsChng("Classic", true);
 	_trailDataSubmit = 0;
 }
 
 export function groomersDrpDn_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	var chkPwd="";
 	for (var i=0;i<_groomerList.length;i++){
 		if (_groomerList[i].title===$w('#groomersDrpDn').value){
@@ -192,6 +184,10 @@ async function fillTrailsDoneTbl(){
 	var today = new Date();
 	var time_ms = today.getTime();
 	let fltrDate = new Date(time_ms-240*60000);
+	let oldTrails=[];
+	let newRws=oldTrails;
+	let oldfnd=false;
+
 	console.log("fillTrailsDoneTbl doing query... for groomer "+$w('#groomersDrpDn').value);
 	try {
 		const results = await wixData.query("skiGroomingTable")
@@ -203,14 +199,15 @@ async function fillTrailsDoneTbl(){
 		.find();
 		var trlDnItems = results.items;
 		console.log("fillTrailsDoneTbl trail "+trlDnItems[0]["trailRef"]["title"]+"; groomer "+trlDnItems[0]["groomerRef"]["title"])
-		let oldTrails=$w('#trailsDoneTbl').rows;
+		oldTrails=$w('#trailsDoneTbl').rows;
 		$w('#trailsDoneTbl').rows=[];
-		let newRws=oldTrails
-		let oldfnd=false;
-// label: Trail; path trailDone
-// path groomerRef
-// path editDate
-
+		newRws=oldTrails
+		oldfnd=false;
+	}
+	catch (err){
+		console.log("fillTrailsDoneTbl caught error "+err)
+	}
+	try{
 		for (var j=0;j<trlDnItems.length;j++){
 			oldfnd=false
 			if (trlDnItems[j]["groomerRef"]["title"]===$w('#groomersDrpDn').value){
@@ -234,12 +231,9 @@ async function fillTrailsDoneTbl(){
 	catch (err){
 		console.log("fillTrailsDoneTbl caught error "+err)
 	}
-
 }
 
 export function groomerPwdEdit_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	var chkPwd="";
 	for (var i=0;i<_groomerList.length;i++){
 		if (_groomerList[i].title===$w('#groomersDrpDn').value){
@@ -440,8 +434,6 @@ function checkSubmit(){
 }
 
 // export function trailNameDrpDn_change(event) {
-// 	// This function was added from the Properties & Events panel. 
-// 	// To learn more, visit http://wix.to/UcBnC-4
 // 	// Add your code for this event here: 
 // 	$w('#trailEntryBox').show();
 // 	_trailDataSubmit = 0;
@@ -451,8 +443,6 @@ function checkSubmit(){
 // }
 
 export function trailRgnDrpDn_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	let vlu=$w('#trailRgnDrpDn').value.toString();
 	fillTrailNameDrpDn(vlu);
 	_trailDataSubmit = 0;
@@ -468,8 +458,6 @@ export function trailRgnDrpDn_change(event) {
 }
 
 export function trailConditionDrpDn_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	let tblrws = $w('#trailCondxTbl').rows;
 	let newelt = $w('#trailConditionDrpDn').value;
 	if (newelt.length>2)
@@ -488,8 +476,6 @@ export function trailConditionDrpDn_change(event) {
 }
 
 export function removeTrailCondxBtn_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	if (_trailCondxTbleNdx>-1 && _trailCondxTbleNdx<$w('#trailCondxTbl').rows.length){
 		let tblrws = $w('#trailCondxTbl').rows;
 		tblrws.splice(_trailCondxTbleNdx,1);
@@ -510,34 +496,31 @@ export function removeTrailCondxBtn_click(event) {
 }
 
 export function trailGroomTime_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	_setElmntsChng("Time",true);
 	_trailDataSubmit = 1;
 	checkSubmit();
 }
 
 export function trailCondxTbl_rowSelect(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	$w('#removeTrailCondxBtn').enable();
 	let rowData = event.rowData;
 	_trailCondxTbleNdx = event.rowIndex;   
 }
 
 export async function submitBtn_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-	// ...
 	let trailId = "";
 	let groomerId = "";
 	if (_groomerList.length < 1)
+	{
+		console.log("submitBtn: returning with no groomerList!")
 		return;
+	}
 	for (i = 0; i < _groomerList.length; i++) {
 		if (_groomerList[i].title === $w('#groomersDrpDn').value) {
 			groomerId = _groomerList[i]._id;
 		}
 	}
+	console.log("submitBtn: found groomerId!"+groomerId);
 
 	let trlCndx = $w('#trailCondxTbl').rows[0].trail_conditions;
 	for (var ii = 1; ii < $w('#trailCondxTbl').rows.length; ii++) {
@@ -559,29 +542,30 @@ export async function submitBtn_click(event) {
 	let toInsert = {}
 	let grpStr=""
 	let trlStr=""
-	let clscRd=""
 	let grmrRd=""
 	let thisTrail=""
-	for (var i = 4; i < __nrEntryRows; i++) {
+	let trlLstNdx=0;
+	for (var i = __fstEntryRow-1; i < __nrEntryRows; i++) {
 		trlStr = ('#trailLabel'+(i+1));
 		grpStr = ('#trGrp' + (i + 1));
 		let trlNdx=$w(trlStr).selectedIndices;
+		console.log("submitBtn: trlStr "+trlStr+"; grpStr "+grpStr+"; trlNdx "+trlNdx.length+"; fstNdx "+trlNdx[0])
+		trlLstNdx=(i-(__fstEntryRow-1));
 		if (!$w(grpStr).hidden && (trlNdx.length>0)) {
-			if (i < _trailList.length) {
-				trailId = _trailList[i]._id
-				thisTrail = _trailList[i].title;
+			if (trlLstNdx < _trailList.length) {
+				trailId = _trailList[trlLstNdx]._id
+				thisTrail = _trailList[trlLstNdx].title;
 			} else
 				break;
 			if ((trailId.length < 2) || (groomerId.length < 2))
 				break;
-			clscRd=('#classicRadio'+(i+1));
-			console.log("submitBtn: for "+thisTrail+"; using "+clscRd+"; classicSet " + $w(clscRd).value)
+			console.log("submitBtn: for "+thisTrail)
 			grmrRd=('#grmMachRadio'+(i+1))
 			toInsert = {
 				"title": o.format(trlGrmDate),
 				"trailCondition": trlCndx,
 				"groomDate": trlGrmDate,
-				"classicSet": $w(clscRd).value > 0,
+				"classicSet": false,
 				"groomMachine": $w(grmrRd).value,
 				"groomerComment": $w('#commentEdit').value,
 				"editDate": new Date(),
@@ -627,8 +611,6 @@ export async function submitBtn_click(event) {
 	checkSubmit();	
 }
 export function trailGroomDate_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	_setElmntsChng("Date",true);
 	_trailDataSubmit = 1;
 	console.log("trailGroomDate setting Date " + _getElmntsChng("Date"));
@@ -636,8 +618,6 @@ export function trailGroomDate_change(event) {
 }
 
 export function classicSetRadio_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	_setElmntsChng("Classic",true);
 	_trailDataSubmit = 1;
 	checkSubmit();
@@ -645,8 +625,6 @@ export function classicSetRadio_change(event) {
 
 
 export function groomMachineRadio_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	_setElmntsChng("Mach",true);
 	_trailDataSubmit = 1;
 	checkSubmit();
@@ -654,10 +632,8 @@ export function groomMachineRadio_change(event) {
 
 
 export function groomMachRadioALL_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
 	let curVal=$w('#groomMachRadioALL').value;
-	for (var i=0;i<__nrEntryRows;i++){
+	for (var i=__fstEntryRow-1;i<__nrEntryRows;i++){
 		let grpStr=('#trGrp'+(i+1));
 		if (!$w(grpStr).hidden){
 			let tmpStr = ('#grmMachRadio'+(i+1));
@@ -668,8 +644,7 @@ export function groomMachRadioALL_change(event) {
 }
 
 export function loginErrorText_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
+
 }
 
 export function loginErrorText_click_1(event) {

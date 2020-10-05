@@ -175,7 +175,7 @@ export class groomReportTable {
 		return sortCmnt;
 	}
 
-	buildGrmRptTable(srtRws) {
+	buildGrmRptTable(trType,srtRws) {
 		let thisTrail = "";
 		console.log("buildGrmRptTable this.reportType " + this.reportType);
 
@@ -193,28 +193,36 @@ export class groomReportTable {
 			}
 		}
 		let tblsrc = "";
-		if (this.reportType === 2) {
-			tblsrc = '<table style="' + fntszfull;
-			tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
-	border: 1px solid black;border-collapse: collapse;">\
-  	<tr style="background-color:rgb(250,250,250);border: 1px solid black;">\
-		<th style="text-align: left;border: 1px solid black;">Trail Name</th> \
-		<th style="text-align: left;border: 1px solid black;">Time</th> \
-		<th style="text-align: left;border: 1px solid black;">ClscSet</th> \
-		<th style="text-align: left;border: 1px solid black;">Mach</th> \
-		<th style="text-align: left;border: 1px solid black;">Condition</th> \
-		<th style="text-align: left;border: 1px solid black;">Comment</th> \
-		<th style="text-align: left;border: 1px solid black;">Groomer</th> \
-  	</tr>');
-		} else {
-			tblsrc = '<table style="width:60%;margin-left:auto;margin-right:auto;' + fntszsimple;
-			tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
-	border:1px solid black;border-collapse:collapse;"> \
-  	<tr style="background-color:rgb(250,250,250);border: 1px solid black;border-collapse: collapse;"> \
-		<th style="text-align: left">Trail Name</th> \
-		<th style="text-align: left">Time</th> \
-		<th style="text-align: left">ClscSet</th> \
-  	</tr>');
+		try {
+			if (this.reportType === 2) {
+				tblsrc = '<table style="' + fntszfull;
+				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
+		border: 1px solid black;border-collapse: collapse;">\
+		<tr style="background-color:rgb(250,250,250);border: 1px solid black;">\
+			<th style="text-align: left;border: 1px solid black;">Trail Name</th> \
+			<th style="text-align: left;border: 1px solid black;">Time</th>;');
+			if (trType==='ski'){
+				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">ClscSet</th>');
+			}
+			tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Mach</th> \
+			<th style="text-align: left;border: 1px solid black;">Condition</th> \
+			<th style="text-align: left;border: 1px solid black;">Comment</th> \
+			<th style="text-align: left;border: 1px solid black;">Groomer</th> \
+		</tr>');
+			} else {
+				tblsrc = '<table style="width:60%;margin-left:auto;margin-right:auto;' + fntszsimple;
+				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
+		border:1px solid black;border-collapse:collapse;"> \
+		<tr style="background-color:rgb(250,250,250);border: 1px solid black;border-collapse: collapse;"> \
+			<th style="text-align: left">Trail Name</th> \
+			<th style="text-align: left">Time</th>');
+			if (trType==='ski'){
+				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">ClscSet</th>');
+			}
+			tblsrc = tblsrc.concat('</tr>');
+			}
+		} catch (err) {
+			console.log("buildGrmRptTable caught error " + err)
 		}
 		let rwHtml = ""
 		let rgnHtml = ""
@@ -244,7 +252,9 @@ export class groomReportTable {
 					rwHtml = rwHtml.concat('<tr style="' + rowClr + ';border: 1px solid black;border-collapse: collapse;">')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailName"] + '</td>')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomTime"] + '</td>')
-					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["classicSet"] + '</td>')
+					if (trType==='ski'){
+						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["classicSet"] + '</td>')
+					}
 					if (this.reportType === 2) {
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomMach"] + '</td>')
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailCondx"] + '</td>')
@@ -272,10 +282,10 @@ export class groomReportTable {
 		this._getWinInfo();
 		try {
 			let newRws = await this._skiGroomingTableQuery(trType);
-			console.log("fillgrmRptTable newRws " + newRws.length)
+			console.log("fillgrmRptTable for trType "+trType+"; newRws " + newRws.length)
 			if (newRws.length < 1) {
 				console.log("fillgrmRptTable exiting with empty newRws")
-				return this.buildGrmRptTable([]);
+				return this.buildGrmRptTable(trType,[]);
 			}
 			var sortRows = newRws.sort(function (a, b) {
 				var srtA = a.viewSort;
@@ -308,7 +318,7 @@ export class groomReportTable {
 				return 0;
 			});
 			if (sortRows.length > -1) {
-				rtrnHtml = this.buildGrmRptTable(sortRows);
+				rtrnHtml = this.buildGrmRptTable(trType,sortRows);
 			}
 
 		} catch (err) {
