@@ -20,9 +20,12 @@ export class groomReportTable {
 		var today = new Date();
 		var time_ms = today.getTime();
 		this.fltrDate = new Date(time_ms - this.hours * 60 * 60000);
-
+		this.bSmallTable = false;
 	}
 
+	setSmallTable(bval){
+		this.bSmallTable = bval;
+	}
 	async _getWinInfo() {
 		let wininfo = await wixWindow.getBoundingRect();
 		this._winHt = wininfo.window.height;
@@ -181,7 +184,10 @@ export class groomReportTable {
 
 		let lstRgn = "";
 		let fntszfull = "width:100%;font-size:12px";
-		let fntszsimple = "width:60%;font-size:18px";
+		let fntszsimple = "width:60%;font-size:16px";
+		if (this.bSmallTable){
+			fntszsimple = "width:100%;font-size:12px";
+		}
 		this._getWinInfo();
 		if (wixWindow.formFactor === "Mobile" || wixWindow.formFactor === "Tablet") {
 			if (this._winWid > this._winHt) {
@@ -197,8 +203,13 @@ export class groomReportTable {
 			if (this.reportType === 2) {
 				tblsrc = '<table style="' + fntszfull;
 				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
-		border: 1px solid black;border-collapse: collapse;">\
-		<tr style="background-color:rgb(250,250,250);border: 1px solid black;">\
+		border: 1px solid black;border-collapse: collapse;">');
+			if (trType==='ski'){
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Ski Grooming</caption>');
+			} else {
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Bike Trails Grooming</caption>');
+			}
+			tblsrc = tblsrc.concat('<tr style="background-color:rgb(250,250,250);border: 1px solid black;">\
 			<th style="text-align: left;border: 1px solid black;">Trail Name</th> \
 			<th style="text-align: left;border: 1px solid black;">Time</th>;');
 			if (trType==='ski'){
@@ -212,8 +223,14 @@ export class groomReportTable {
 			} else {
 				tblsrc = '<table style="width:60%;margin-left:auto;margin-right:auto;' + fntszsimple;
 				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
-		border:1px solid black;border-collapse:collapse;"> \
-		<tr style="background-color:rgb(250,250,250);border: 1px solid black;border-collapse: collapse;"> \
+		border:1px solid black;border-collapse:collapse;">');
+			if (trType==='ski'){
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Ski Grooming</caption>');
+			} else {
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Bike Trails Grooming</caption>');
+			}
+
+			tblsrc = tblsrc.concat('<tr style="background-color:rgb(250,250,250);border: 1px solid black;border-collapse: collapse;"> \
 			<th style="text-align: left">Trail Name</th> \
 			<th style="text-align: left">Time</th>');
 			if (trType==='ski'){
