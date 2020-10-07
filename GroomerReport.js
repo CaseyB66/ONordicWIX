@@ -186,7 +186,7 @@ export class groomReportTable {
 		let fntszfull = "width:100%;font-size:12px";
 		let fntszsimple = "width:60%;font-size:16px";
 		if (this.bSmallTable){
-			fntszsimple = "width:100%;font-size:12px";
+			fntszsimple = "width:100%;font-size:13px";
 		}
 		this._getWinInfo();
 		if (wixWindow.formFactor === "Mobile" || wixWindow.formFactor === "Tablet") {
@@ -205,9 +205,9 @@ export class groomReportTable {
 				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
 		border: 1px solid black;border-collapse: collapse;">');
 			if (trType==='ski'){
-				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Ski Grooming</caption>');
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Ski Trail Grooming Status</caption>');
 			} else {
-				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Bike Trails Grooming</caption>');
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Bike Trail Grooming< Status/caption>');
 			}
 			tblsrc = tblsrc.concat('<tr style="background-color:rgb(250,250,250);border: 1px solid black;">\
 			<th style="text-align: left;border: 1px solid black;">Trail Name</th> \
@@ -225,9 +225,9 @@ export class groomReportTable {
 				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
 		border:1px solid black;border-collapse:collapse;">');
 			if (trType==='ski'){
-				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Ski Grooming</caption>');
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Ski Trail Grooming Status</caption>');
 			} else {
-				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Bike Trails Grooming</caption>');
+				tblsrc = tblsrc.concat('<caption style="background-color:rgb(180,180,180)">Bike Trail Grooming Status</caption>');
 			}
 
 			tblsrc = tblsrc.concat('<tr style="background-color:rgb(250,250,250);border: 1px solid black;border-collapse: collapse;"> \
