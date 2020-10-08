@@ -146,8 +146,8 @@
         nordicmarker = new google.maps.Marker({
             position: { lat: 41.371011, lng: -111.902188},
             map: map,
-            title: "Nordic\nCenter",
-            label: "Nordic\nCenter"
+            title: "Nordic Center",
+            label: "Nordic Center"
         });
         map.setOptions({styles: styles["hide"]});
         var msg={
@@ -240,8 +240,6 @@
               polylinetrk.setMap(map);
 
               contentString = '<div id="content">'+
-                  '<div id="siteNotice">'+
-                  '</div>'+
                   '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label+'</b><br><br>Trail Length: ';
                   contentString=contentString.concat(trailLgth.toFixed(2).toString());
                   contentString=contentString.concat(' miles (');
@@ -251,8 +249,8 @@
                     event.data.value.color+'">Last Groom: '+
                     event.data.value.grmDate+'<div>');
                   contentString=contentString.concat('<div style="line-height:100%;'+event.data.value.skiDifficulty.color+'">');
-              		if (event.data.value.skiDifficulty==="ski"){
-	                  contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+                  if (event.data.value.trType==="ski"){
+                          contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
                   }else{
                     contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
 	                }
@@ -292,7 +290,7 @@
       }
       
       function ready(){
-        showScreen();
+        // showScreen();
         var msg={
           "type":"ready",
           "label":"",
@@ -303,8 +301,6 @@
     </script>
     <div>
       <p id="screenp"></p>
-      <p>Pick trail from the drop-down. Then click on the trail icon for more
-        detail</p>
     </div>
     <div id="map"></div>
   </body>
