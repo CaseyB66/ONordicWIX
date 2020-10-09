@@ -8,7 +8,6 @@ let _winHt = 0;
 let _winWid = 0;
 
 $w.onReady(function () {
-	$w('#scrnResltnTxt').hide();
 	$w('#genCmntText').hide();
 
 	fillTrailRgnDrpDn();
@@ -109,11 +108,6 @@ export function grmRptHours_change(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
 	fillGrmRptTbl();
-}
-
-export function scrnResltnTxt_click(event) {
-	$w('#scrnResltnTxt').hide();
-
 }
 
 export function reportOptionsRadio_change(event) {

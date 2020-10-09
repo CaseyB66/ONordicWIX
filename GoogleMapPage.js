@@ -1,8 +1,7 @@
 import wixData from 'wix-data';
 import {roughSizeOfObject} from 'public/misc.js'
 import {groomReportTable} from 'public/GroomReport.js' 
-
-// For full API documentation, including code examples, visit https://wix.to/94BuAAs
+import {getTrailColor} from 'public/GroomReport.js' 
 
 let _grmRpt = null;
 let _currTrailName="";
@@ -103,11 +102,13 @@ export function sendTrack(name,xml){
     // var parser = new DOMParser();
     // var xmlDoc = parser.parseFromString(xml,"text/xml");
     console.log("sendTrack: bkg "+bkgClr+"; trkDate "+trkDate)
-
+    let trkColor=getTrailColor(Math.floor(Math.random() * 100))
     var msg={
         type:"addtrack",
         label:_currTrailName,
-        value:{xml:xml,color:bkgClr,grmDate:trkDate,skiDifficulty:skiDffclt,trType:trType}
+        value:{xml:xml,trkColor:trkColor,
+        grmColor:bkgClr,grmDate:trkDate,
+        skiDifficulty:skiDffclt,trType:trType}
         }
         $w("#googleMapHTML").postMessage(msg);        
 }
@@ -251,14 +252,18 @@ function doTest(){
 
 }
 
-export function trailTypeRadio_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
+export function showAllRegionSwitch_change(event) {
+    if ($w('#showAllRegionSwitch').checked===true){
+
+    } else {
+
+    }
 }
 
-export function trailTypeRadio_change_1(event) {
+export function trailTypeRadio_change(event) {
     const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
     _groomTableData=[];
+    $w('#showAllRegionSwitch').checked = false;
     fillTrailRgnDrpDn();
     doTrailRgn_change();
 }

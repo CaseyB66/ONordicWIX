@@ -7,6 +7,14 @@ import wixData from 'wix-data';
 // Use public files to hold utility functions that can 
 // be called from multiple locations in your site's code.
 
+export function getTrailColor(trct){
+	const maxClrs = 7;
+	// ROYGBIV: Red, Orange, Yellow, Green, Blue, Indigo, Violet
+	const clrs = ['#FF0000','#FFA500','#FFFF00','#008000','#0000FF','#4B0082','#EE82EE'];
+	let clrNdx = trct % maxClrs;
+	return clrs[clrNdx];
+}
+
 export class groomReportTable {
 	// rprtType can be 0 for "Brief", 1 for "All Trails", 3 for "Full"
 	constructor(rgn = "South", hrs = 24, rprtTyp = 0) {

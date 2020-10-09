@@ -457,11 +457,6 @@ export function trailRgnDrpDn_change(event) {
 	let vlu=$w('#trailRgnDrpDn').value.toString();
 	fillTrailNameDrpDn(vlu);
 	_trailDataSubmit = 0;
-	$w('#trailEntryBox').show();
-	// if ($w('#trailNameDrpDn').selectedIndex>-1)
-	// 	$w('#trailEntryBox').show();
-	// else
-	// 	$w('#trailEntryBox').hide();
 
 	$w('#trailEntryBox').show();
 	clearEntryFields();
@@ -683,12 +678,5 @@ export function classicRadioALL_click(event) {
 }
 
 export function loginErrorText_click(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-}
-
-export function loginErrorText_click_1(event) {
-	if ($w('#loginErrorText').isVisible){
-		$w('#loginErrorText').hide();
-	}
+	$w('#loginErrorText').hide();
 }

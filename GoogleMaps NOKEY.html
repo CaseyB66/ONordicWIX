@@ -92,13 +92,13 @@
   	</style>
   </head>
   <body onload="ready()"> 
-    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
+    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=api_keyAA&callback=initMap"></script>
     <script type="text/javascript">
       const mintrackpointdelta = 0.0001;
       var map;
-      var contentString="";
-      var polylinetrk=null;
-      var trailmarker=null;
+      var contetrailmarkersntString="";
+      var polylinetrks=[];
+      var trailmarkers=[];
       var nordicmarker=null;
       var pointarray = [];
       var deg_rads = (2*Math.PI)/360.0;
@@ -146,8 +146,8 @@
         nordicmarker = new google.maps.Marker({
             position: { lat: 41.371011, lng: -111.902188},
             map: map,
-            title: "Nordic Center",
-            label: "Nordic Center"
+            title: "Nordic Ctr",
+            label: "Nordic Ctr"
         });
         map.setOptions({styles: styles["hide"]});
         var msg={
@@ -161,6 +161,7 @@
       window.onmessage = function(event){
           if (event.data && event.data.hasOwnProperty('type')) {
             console.log("map found event type "+event.data.type+"; value "+event.data.value[0]);
+            // ************ADDLOC**************
             if (event.data.type==="addloc"){
               var latLng = new google.maps.LatLng(event.data.value['lat'],event.data.value['lng']);
               var marker = new google.maps.Marker({
@@ -170,14 +171,22 @@
               map: map
               });
             }
+            // ************ADDTRACK**************
             if (event.data.type==="addtrack"){
+              let ct = 0;
               parser = new DOMParser();
               xmlDoc = parser.parseFromString(event.data.value.xml,"text/xml");
-              if (pointarray.length>2)
-                polylinetrk.setMap(null);
-              if (trailmarker!==null){
-                trailmarker.setMap(null);
-                trailmarker=null;
+              if (polylinetrks.length>0){
+                for (ct = polylinetrks.length-1;ct>=0 ;ct--){
+                  polylinetrks[ct].setMap(null);
+                }
+              }
+              polylinetrks=[];
+              if (trailmarkers.length>0){
+                for (ct = trailmarkers.length-1; ct>=0;ct--){
+                  trailmarkers[ct].setMap(null);
+                }
+                trailmarkers=[];
               }
               pointarray = [];
               var trackpoints= xmlDoc.getElementsByTagName("trkpt");
@@ -210,7 +219,7 @@
                     console.log("addTrack caught math error "+err);
                   }
                   if(thisLgth> mintrackpointdelta) {
-                      console.log("addTrack d = "+thisLgth);
+                      // console.log("addTrack d = "+thisLgth);
                       trailLgth+=thisLgth;
                       lastlon = lon;
                       lastlat = lat;
@@ -230,14 +239,13 @@
               meanlat/=pointarray.length;
               meanlon/=pointarray.length;
               console.log("addTrack found "+pointarray.length+" points")
-              polylinetrk = new google.maps.Polyline({
+              polylinetrks.push(new google.maps.Polyline({
                   path: pointarray,
-                  strokeColor: "#FF0000",
+                  strokeColor: event.data.value.trkColor,
                   strokeWeight: 3,
                   title: event.data.label,
-                  label: event.data.label
-              });
-              polylinetrk.setMap(map);
+              }));
+              polylinetrks[0].setMap(map);
 
               contentString = '<div id="content">'+
                   '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label+'</b><br><br>Trail Length: ';
@@ -246,7 +254,7 @@
                   contentString=contentString.concat((1.609344*trailLgth).toFixed(2).toString());
                   contentString=contentString.concat(' km)');
                   contentString=contentString.concat('<div style="line-height:100%;'+
-                    event.data.value.color+'">Last Groom: '+
+                    event.data.value.grmColor+'">Last Groom: '+
                     event.data.value.grmDate+'<div>');
                   contentString=contentString.concat('<div style="line-height:100%;'+event.data.value.skiDifficulty.color+'">');
                   if (event.data.value.trType==="ski"){
@@ -260,14 +268,20 @@
               var infowindow = new google.maps.InfoWindow({
                     content: contentString
                 });
-              trailmarker = new google.maps.Marker({
+              trailmarkers.push(new google.maps.Marker({
                   position: { lat: meanlat/deg_rads, lng: meanlon/deg_rads},
                   map: map,
                   title: event.data.label,
-                  label: event.data.label
-              });
-              google.maps.event.addListener(trailmarker, 'click', function() {
-                infowindow.open(map,trailmarker);
+                  label: {text:event.data.label,color:event.data.value.trkColor,fontSiuze:'12px'},
+                  icon: {
+                      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+                      scale: 5,
+                      strokeColor:event.data.value.trkColor,
+                    }
+                  // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
+              }));
+              google.maps.event.addListener(trailmarkers[0], 'click', function() {
+                infowindow.open(map,trailmarkers[0]);
               });
 
             var msg={
@@ -277,6 +291,11 @@
             };
             window.parent.postMessage(msg , "*");
             }
+
+            // ************ADDREGIONTRACKS**************
+            if (event.data.type==="addregiontracks"){
+            }
+
 
           }
           else {
