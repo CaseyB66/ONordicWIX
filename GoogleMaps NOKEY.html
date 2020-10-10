@@ -92,7 +92,7 @@
   	</style>
   </head>
   <body onload="ready()"> 
-    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=api_keyAA&callback=initMap"></script>
+    <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
     <script type="text/javascript">
       const mintrackpointdelta = 0.0001;
       var map;
@@ -101,6 +101,7 @@
       var trailmarkers=[];
       var nordicmarker=null;
       var pointarray = [];
+      var infoWindow = [];
       var deg_rads = (2*Math.PI)/360.0;
       const initCtr={lat: 41.37527, lng: -111.908221}
       const ONORDIC_BOUNDS = {
@@ -157,7 +158,83 @@
         };
         window.parent.postMessage(msg , "*");
       }
-      
+
+      function clearMapData(){
+        if (polylinetrks.length>0){
+          for (ct = polylinetrks.length-1;ct>=0 ;ct--){
+            polylinetrks[ct].setMap(null);
+          }
+        }
+        polylinetrks=[];
+        if (trailmarkers.length>0){
+          for (ct = trailmarkers.length-1; ct>=0;ct--){
+            trailmarkers[ct].setMap(null);
+          }
+          trailmarkers=[];
+        }
+        infoWindows = [];
+        pointarray = [];
+      }
+
+      function parsePointArray(xml){
+        var pntarry=[];
+        parser = new DOMParser();
+        xmlDoc = parser.parseFromString(xml,"text/xml");
+        var trackpoints= xmlDoc.getElementsByTagName("trkpt");
+        if(trackpoints.length == 0) {
+            console.log("addtrack returning with no trkpt")
+            return;
+        }
+  
+        var lastlon = parseFloat(trackpoints[0].getAttribute("lon"))*deg_rads;
+        var lastlat = parseFloat(trackpoints[0].getAttribute("lat"))*deg_rads;
+        var trailLgth=0;
+        var minlat=1E20;var maxlat=-1E20;
+        var minlon=1E20;var maxlon=-1E20;
+        var meanlat=lastlat; var meanlon=lastlon;
+        var a=0; 
+        var c=0;
+        var thisLgth=0;
+        pntarry.push({ lat: lastlat/deg_rads, lng: lastlon/deg_rads});
+        for(var i = 1; i < trackpoints.length; i++) {
+            var lon = parseFloat(trackpoints[i].getAttribute("lon"))*deg_rads;
+            var lat = parseFloat(trackpoints[i].getAttribute("lat"))*deg_rads;
+            // Verify that this is far enough away from the last point to be used.
+            var latdiff = lat - lastlat;
+            var londiff = lon - lastlon;
+            try{
+              a = (Math.sin(latdiff/2))**2 + Math.cos(lat) * Math.cos(lastlat) * (Math.sin(londiff/2))**2;
+              c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a) )
+              thisLgth = 3961 * c; // (where 3961 miles is the radius of the Earth) 
+            } catch(err){
+              console.log("addTrack caught math error "+err);
+            }
+            if(thisLgth> mintrackpointdelta) {
+                // console.log("addTrack d = "+thisLgth);
+                trailLgth+=thisLgth;
+                lastlon = lon;
+                lastlat = lat;
+                meanlat+=lat;
+                meanlon+=lon;
+                if (minlat>lat)
+                  minlat=lat;
+                if (maxlat<lat)
+                  maxlat=lat;
+                if (minlon>lon)
+                  minlon=lon;
+                if (maxlon<lon)
+                  maxlon=lon;
+                pntarry.push({ lat: lat/deg_rads, lng: lon/deg_rads});
+            }
+        }
+        meanlat/=pntarry.length;
+        meanlon/=pntarry.length;
+        return {array:pntarry,
+                trailLgth:trailLgth,
+                meanlat:meanlat,
+                meanlon:meanlon};
+      }
+
       window.onmessage = function(event){
           if (event.data && event.data.hasOwnProperty('type')) {
             console.log("map found event type "+event.data.type+"; value "+event.data.value[0]);
@@ -174,73 +251,12 @@
             // ************ADDTRACK**************
             if (event.data.type==="addtrack"){
               let ct = 0;
-              parser = new DOMParser();
-              xmlDoc = parser.parseFromString(event.data.value.xml,"text/xml");
-              if (polylinetrks.length>0){
-                for (ct = polylinetrks.length-1;ct>=0 ;ct--){
-                  polylinetrks[ct].setMap(null);
-                }
-              }
-              polylinetrks=[];
-              if (trailmarkers.length>0){
-                for (ct = trailmarkers.length-1; ct>=0;ct--){
-                  trailmarkers[ct].setMap(null);
-                }
-                trailmarkers=[];
-              }
-              pointarray = [];
-              var trackpoints= xmlDoc.getElementsByTagName("trkpt");
-              if(trackpoints.length == 0) {
-                  console.log("addtrack returning with no trkpt")
-                  return;
-              }
-
-              var lastlon = parseFloat(trackpoints[0].getAttribute("lon"))*deg_rads;
-              var lastlat = parseFloat(trackpoints[0].getAttribute("lat"))*deg_rads;
-              var trailLgth=0;
-              var minlat=1E20;var maxlat=-1E20;
-              var minlon=1E20;var maxlon=-1E20;
-              var meanlat=lastlat; var meanlon=lastlon;
-              var a=0; 
-              var c=0;
-              var thisLgth=0;
-              pointarray.push({ lat: lastlat/deg_rads, lng: lastlon/deg_rads});
-              for(var i = 1; i < trackpoints.length; i++) {
-                  var lon = parseFloat(trackpoints[i].getAttribute("lon"))*deg_rads;
-                  var lat = parseFloat(trackpoints[i].getAttribute("lat"))*deg_rads;
-                  // Verify that this is far enough away from the last point to be used.
-                  var latdiff = lat - lastlat;
-                  var londiff = lon - lastlon;
-                  try{
-                    a = (Math.sin(latdiff/2))**2 + Math.cos(lat) * Math.cos(lastlat) * (Math.sin(londiff/2))**2;
-                    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a) )
-                    thisLgth = 3961 * c; // (where 3961 miles is the radius of the Earth) 
-                  } catch(err){
-                    console.log("addTrack caught math error "+err);
-                  }
-                  if(thisLgth> mintrackpointdelta) {
-                      // console.log("addTrack d = "+thisLgth);
-                      trailLgth+=thisLgth;
-                      lastlon = lon;
-                      lastlat = lat;
-                      meanlat+=lat;
-                      meanlon+=lon;
-                      if (minlat>lat)
-                        minlat=lat;
-                      if (maxlat<lat)
-                        maxlat=lat;
-                      if (minlon>lon)
-                        minlon=lon;
-                      if (maxlon<lon)
-                        maxlon=lon;
-                      pointarray.push({ lat: lat/deg_rads, lng: lon/deg_rads});
-                  }
-              }
-              meanlat/=pointarray.length;
-              meanlon/=pointarray.length;
-              console.log("addTrack found "+pointarray.length+" points")
+              clearMapData();
+              pntArryDict=parsePointArray(event.data.value.xml);
+              pointarray.push(pntArryDict.array);
+              console.log("addTrack found "+pointarray[0].length+" points")
               polylinetrks.push(new google.maps.Polyline({
-                  path: pointarray,
+                  path: pointarray[0],
                   strokeColor: event.data.value.trkColor,
                   strokeWeight: 3,
                   title: event.data.label,
@@ -249,9 +265,9 @@
 
               contentString = '<div id="content">'+
                   '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label+'</b><br><br>Trail Length: ';
-                  contentString=contentString.concat(trailLgth.toFixed(2).toString());
+                  contentString=contentString.concat(pntArryDict.trailLgth.toFixed(2).toString());
                   contentString=contentString.concat(' miles (');
-                  contentString=contentString.concat((1.609344*trailLgth).toFixed(2).toString());
+                  contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
                   contentString=contentString.concat(' km)');
                   contentString=contentString.concat('<div style="line-height:100%;'+
                     event.data.value.grmColor+'">Last Groom: '+
@@ -265,11 +281,11 @@
                   contentString=contentString.concat('</div></div>');
               console.log("addTrack info: "+contentString);
 
-              var infowindow = new google.maps.InfoWindow({
+              infoWindows.push(new google.maps.InfoWindow({
                     content: contentString
-                });
+                }));
               trailmarkers.push(new google.maps.Marker({
-                  position: { lat: meanlat/deg_rads, lng: meanlon/deg_rads},
+                  position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
                   map: map,
                   title: event.data.label,
                   label: {text:event.data.label,color:event.data.value.trkColor,fontSiuze:'12px'},
@@ -281,13 +297,13 @@
                   // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
               }));
               google.maps.event.addListener(trailmarkers[0], 'click', function() {
-                infowindow.open(map,trailmarkers[0]);
+                infoWindows[0].open(map,trailmarkers[0]);
               });
 
             var msg={
               "type":"addtrack",
               "label":event.data.label,
-              "value":[minlat.toFixed(4),maxlat.toFixed(4),minlon.toFixed(4),maxlon.toFixed(4),meanlat.toFixed(4),meanlon.toFixed(4)]
+              "value":[pntArryDict.meanlat.toFixed(4),pntArryDict.meanlon.toFixed(4)]
             };
             window.parent.postMessage(msg , "*");
             }

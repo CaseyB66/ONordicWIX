@@ -12,7 +12,7 @@ $w.onReady(function () {
     console.log("onReady")
     console.log("onReady # entries in groomTable "+_groomTableData.length)
     // doTest();
-    let htmlText = '<div style="background-color:rgb(100,200,0);font-size:16px;text-align:center">';
+    let htmlText = '<div style="background-color:rgb(100,200,0);font-size:18px;text-align:center">';
     htmlText=htmlText.concat('Pick Trail Region and Trail from the drop-dwons lists; When it appears on the map, click the icon for more detail</div>');
     $w('#mapInstructionText').html=htmlText;
     htmlText = '<div style="background-color:rgb(250,250,250);font-size:16px">';
@@ -40,6 +40,7 @@ $w.onReady(function () {
 });
 
 async function queryGroomReportTable(){
+    // get a month's worth of grooming data...
     _grmRpt = new groomReportTable("All", 720, 1);
 	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
 
@@ -91,14 +92,6 @@ export function sendTrack(name,xml){
     var sz = roughSizeOfObject(xml);
     console.log("sendTrack: xml length "+xml.length)
     var kys=Object.keys(xml);
-    const doloop=false;
-    if (doloop){
-        for (const ky in kys) {
-            for( var kyobj in xml[ky] ) {
-                    console.log("sendTrack kyobj "+kyobj[0]);
-                }
-        }    
-    }
     // var parser = new DOMParser();
     // var xmlDoc = parser.parseFromString(xml,"text/xml");
     console.log("sendTrack: bkg "+bkgClr+"; trkDate "+trkDate)
@@ -110,7 +103,58 @@ export function sendTrack(name,xml){
         grmColor:bkgClr,grmDate:trkDate,
         skiDifficulty:skiDffclt,trType:trType}
         }
-        $w("#googleMapHTML").postMessage(msg);        
+    $w("#googleMapHTML").postMessage(msg);        
+}
+
+export function sendRegionTracks(){
+    // addregiontracks
+    if (_currTrailList.length<1)
+        return;
+    if (_groomTableData.length<1)
+        return;
+    var today = new Date();
+    var time_ms = today.getTime();
+    var errDate =  new Date(); errDate.setTime(0);
+    let trailNamesLst = [];
+    let xmlLst = [];
+    let trkClrLst = [];
+    let grmDateLst = [];
+    let grmClrLst = [];
+    let skiDffcltLst = [];
+    let ii=0; let jj = 0;
+    const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
+    var tdiff = 0;
+    var grmDataFnd = false;
+    for (ii=0;ii<_currTrailList.length;ii++){
+        trailNamesLst.push(_currTrailList[ii].title); 
+        xmlLst.push(_currTrailList[ii].gpxText);
+        trkClrLst.push(getTrailColor(ii));
+        grmDataFnd = false;
+        for (jj=0;jj<_groomTableData.length;jj++){
+            if (_groomTableData[jj].trailName.toLowerCase()===_currTrailList[ii].title.toLowerCase()){
+                tdiff = time_ms - _groomTableData[jj].fullDate.getTime();
+                grmDateLst.push(_groomTableData[jj].groomTime);
+                grmClrLst.push(_grmRpt.getDateColor(_groomTableData[jj].fullDate))
+                skiDffcltLst.push(_grmRpt.getSkiDifficultyObject(_groomTableData[jj]['skiDifficulty']));
+                grmDataFnd = true;
+                break;
+            }
+        if (!grmDataFnd)
+            {
+                grmDateLst.push(errDate);
+                grmClrLst.push(_grmRpt.getDateColor(errDate))
+                skiDffcltLst.push({color:"background-color:rgb(200,0,0)",descr:"UNK"});
+            }
+        }
+    }
+    var msg={
+        type:"addregiontracks",
+        label:trailNamesLst,
+        value:{xml:xmlLst,trkColor:trkClrLst,
+        grmColor:grmClrLst,grmDate:grmDateLst,
+        skiDifficulty:skiDffcltLst,trType:trType}
+        }
+    $w("#googleMapHTML").postMessage(msg);        
 }
 
 async function fillTrailRgnDrpDn() {
@@ -136,7 +180,7 @@ async function fillTrailRgnDrpDn() {
 
     }
     catch (err) {
-        console.log("fillTrailNameDrpDn caught "+err);
+        console.log("fillTrailRgnDrpDn caught "+err);
     }
 doTrailRgn_change();
 }
@@ -211,13 +255,17 @@ async function fillTrailNameDrpDn(rgn){
 	_currTrailName = _currTrailList[0].title;
     $w('#trailNameDrpDn').selectedIndex=0;
 	console.log("fillTrailName set trail to "+_currTrailName);
-    sendTrack(_currTrailName,_currTrailList[0].gpxText)
 }
 
-export function doTrailRgn_change(){
+export async function doTrailRgn_change(){
     let rgn=$w('#trailRgnDrpDn').options[$w('#trailRgnDrpDn').selectedIndex].label
     console.log("trailRgnDrpDn_change "+rgn)
-    return fillTrailNameDrpDn(rgn);
+    await fillTrailNameDrpDn(rgn);
+    if ($w('#showAllRegionSwitch').checked){
+        
+    } else {
+        return sendTrack(_currTrailName,_currTrailList[0].gpxText)
+    }
 }
 
 export function trailNameDrpDn_change(event) {
@@ -226,6 +274,7 @@ export function trailNameDrpDn_change(event) {
         if (_currTrailList[i].title===_currTrailName)
             break;
     }
+    $w('#showAllRegionSwitch').checked = false;
     sendTrack(_currTrailName, _currTrailList[i].gpxText);
 }
 
