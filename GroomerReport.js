@@ -34,22 +34,26 @@ export class groomReportTable {
 	setSmallTable(bval){
 		this.bSmallTable = bval;
 	}
+
 	async _getWinInfo() {
 		let wininfo = await wixWindow.getBoundingRect();
 		this._winHt = wininfo.window.height;
 		this._winWid = wininfo.window.width;
 	}
 
-	async _skiGroomingTableQuery(trType) {
-		let mchfltr = '1';
-		if (this.reportType === 2)
-			mchfltr = '0'
+	getTimeString(thedate){
 		var dateStrOpts = {
 			month: 'short',
 			day: '2-digit',
 			hour: '2-digit',
 			minute: '2-digit'
 		};
+		return thedate.toLocaleDateString("en-US", dateStrOpts);
+	}
+	async _skiGroomingTableQuery(trType) {
+		let mchfltr = '1';
+		if (this.reportType === 2)
+			mchfltr = '0'
 
 		console.log("_skiGroomingTableQuery starting...")
         var trlDnItems = [];
@@ -98,7 +102,7 @@ export class groomReportTable {
 					else
 						machtxt = "Drag"
 				}
-				timStr = trlDnItems[j]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
+				timStr = this.getTimeString(trlDnItems[j]["groomDate"]);
 				newRws.push({
 					"trailName": trlDnItems[j]["trailRef"]["title"],
 					"fullDate": trlDnItems[j]["groomDate"],

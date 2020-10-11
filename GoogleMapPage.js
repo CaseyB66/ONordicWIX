@@ -132,6 +132,7 @@ export function sendRegionTracks(){
         grmDataFnd = false;
         for (jj=0;jj<_groomTableData.length;jj++){
             if (_groomTableData[jj].trailName.toLowerCase()===_currTrailList[ii].title.toLowerCase()){
+                console.log("sendRegionTracks testing "+_groomTableData[jj].trailName+" against "+_currTrailList[ii].title)
                 tdiff = time_ms - _groomTableData[jj].fullDate.getTime();
                 grmDateLst.push(_groomTableData[jj].groomTime);
                 grmClrLst.push(_grmRpt.getDateColor(_groomTableData[jj].fullDate))
@@ -139,14 +140,16 @@ export function sendRegionTracks(){
                 grmDataFnd = true;
                 break;
             }
-        if (!grmDataFnd)
+        }
+        if (grmDataFnd===false)
             {
-                grmDateLst.push(errDate);
+                console.log("sendRegionTracks failed to match "+_currTrailList[ii].title)
+                grmDateLst.push(_grmRpt.getTimeString(errDate));
                 grmClrLst.push(_grmRpt.getDateColor(errDate))
                 skiDffcltLst.push({color:"background-color:rgb(200,0,0)",descr:"UNK"});
             }
-        }
     }
+    console.log("sendRegionTracks found "+xmlLst.length+" tracks; isArray "+Array.isArray(xmlLst))
     var msg={
         type:"addregiontracks",
         label:trailNamesLst,
@@ -262,7 +265,7 @@ export async function doTrailRgn_change(){
     console.log("trailRgnDrpDn_change "+rgn)
     await fillTrailNameDrpDn(rgn);
     if ($w('#showAllRegionSwitch').checked){
-        
+        return sendRegionTracks();
     } else {
         return sendTrack(_currTrailName,_currTrailList[0].gpxText)
     }
@@ -302,11 +305,7 @@ function doTest(){
 }
 
 export function showAllRegionSwitch_change(event) {
-    if ($w('#showAllRegionSwitch').checked===true){
-
-    } else {
-
-    }
+    doTrailRgn_change();
 }
 
 export function trailTypeRadio_change(event) {

@@ -106,7 +106,7 @@
       const initCtr={lat: 41.37527, lng: -111.908221}
       const ONORDIC_BOUNDS = {
         north: 41.397,
-        south: 41.358,
+        south: 41.353,
         west: -111.928,
         east: -111.898,
       };        
@@ -234,6 +234,17 @@
                 meanlat:meanlat,
                 meanlon:meanlon};
       }
+      
+      // Attaches an info window to a marker with the provided message. When the
+      // marker is clicked, the info window will open with the secret message.
+      function attachMarkerMessage(marker, msg) {
+        const infowindow = new google.maps.InfoWindow({
+          content: msg,
+        });
+        marker.addListener("click", () => {
+          infowindow.open(marker.get("map"), marker);
+        });
+      }
 
       window.onmessage = function(event){
           if (event.data && event.data.hasOwnProperty('type')) {
@@ -279,7 +290,6 @@
                     contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
 	                }
                   contentString=contentString.concat('</div></div>');
-              console.log("addTrack info: "+contentString);
 
               infoWindows.push(new google.maps.InfoWindow({
                     content: contentString
@@ -288,7 +298,7 @@
                   position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
                   map: map,
                   title: event.data.label,
-                  label: {text:event.data.label,color:event.data.value.trkColor,fontSiuze:'12px'},
+                  label: {text:event.data.label,color:event.data.value.trkColor,fontSize:'12px'},
                   icon: {
                       path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
                       scale: 5,
@@ -299,6 +309,7 @@
               google.maps.event.addListener(trailmarkers[0], 'click', function() {
                 infoWindows[0].open(map,trailmarkers[0]);
               });
+              map.panTo({lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads});
 
             var msg={
               "type":"addtrack",
@@ -310,15 +321,72 @@
 
             // ************ADDREGIONTRACKS**************
             if (event.data.type==="addregiontracks"){
-            }
+              if (typeof event.data.value !== 'object'){
+                console.log("addregiontracks found incorrect input data");
+              }
+              if (!Array.isArray(event.data.value.xml)){
+                console.log('addregiontracks: event.data.value.xml must be an array');
+              }
+              let ct = 0;
+              clearMapData();
+              let ii =0;
+              let meanlat=0; let meanlng=0;
+              for (ii=0;ii<event.data.value.xml.length;ii++){
+                pntArryDict=parsePointArray(event.data.value.xml[ii]);
+                pointarray.push(pntArryDict.array);
+                console.log("addregiontracks found "+pointarray[ii].length+" points")
+                polylinetrks.push(new google.maps.Polyline({
+                    path: pointarray[ii],
+                    strokeColor: event.data.value.trkColor[ii],
+                    strokeWeight: 3,
+                    title: event.data.label[ii],
+                }));
+                polylinetrks[ii].setMap(map);
+                contentString = '<div id="content">'+
+                    '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label[ii]+'</b><br><br>Trail Length: ';
+                    contentString=contentString.concat(pntArryDict.trailLgth.toFixed(2).toString());
+                    contentString=contentString.concat(' miles (');
+                    contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
+                    contentString=contentString.concat(' km)');
+                    contentString=contentString.concat('<div style="line-height:100%;'+
+                      event.data.value.grmColor[ii]+'">Last Groom: '+
+                      event.data.value.grmDate[ii]+'<div>');
+                    contentString=contentString.concat('<div style="line-height:100%;'+event.data.value.skiDifficulty[ii].color+'">');
+                    if (event.data.value.trType==="ski"){
+                            contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty[ii].descr+'<div>');
+                    }else{
+                      contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty[ii].descr+'<div>');
+                    }
+                    contentString=contentString.concat('</div></div>');
+                infoWindows.push(new google.maps.InfoWindow({
+                      content: contentString
+                  }));
+                console.log("addregiontracks for ii="+ii+", infoWindow: "+contentString+"; length is "+infoWindows.length);
+                meanlat+=pntArryDict.meanlat/deg_rads; meanlng+=pntArryDict.meanlon/deg_rads;
+                trailmarkers.push(new google.maps.Marker({
+                    position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
+                    map: map,
+                    title: event.data.label[ii],
+                    label: {text:event.data.label[ii],color:event.data.value.trkColor[ii],fontSize:'12px'},
+                    icon: {
+                        path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+                        scale: 5,
+                        strokeColor:event.data.value.trkColor[ii],
+                      }
+                    // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
+                }));
+                attachMarkerMessage(trailmarkers[ii], contentString);
+            	}
+              map.panTo({lat: meanlat/trailmarkers.length, lng: meanlng/trailmarkers.length});
+            } // end addregiontracks
 
-
-          }
+          } // end hasownproperty
           else {
             console.log("map received a generic message:");
             console.log(event.data);
           }
         };
+      
       function showScreen() {
         var x = "Total Width: " + screen.width + "px" + "; Height: "+screen.height+"px";
         document.getElementById("screenp").innerHTML = x;
