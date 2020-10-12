@@ -15,9 +15,6 @@ $w.onReady(function () {
     let htmlText = '<div style="background-color:rgb(100,200,0);font-size:18px;text-align:center">';
     htmlText=htmlText.concat('Pick Trail Region and Trail from the drop-dwons lists; When it appears on the map, click the icon for more detail</div>');
     $w('#mapInstructionText').html=htmlText;
-    htmlText = '<div style="background-color:rgb(250,250,250);font-size:16px">';
-    htmlText=htmlText.concat('Show All Region Trails</div>');
-    $w('#showAllRegionLabel').html = htmlText;
 
 	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Bike", value: 'bike' }]
 	$w('#trailTypeRadio').selectedIndex = 0;
@@ -69,7 +66,9 @@ async function queryGroomReportTable(){
     });
 }
 
-export function sendTrack(name,xml){
+export function sendTrack(){
+    const name = _currTrailName;
+    const xml = _currTrailList[$w('#trailNameDrpDn').selectedIndex].gpxText;
     var today = new Date();
     var time_ms = today.getTime();
     var bkgClr = "";
@@ -89,7 +88,6 @@ export function sendTrack(name,xml){
             break;
         }
     }
-    var sz = roughSizeOfObject(xml);
     console.log("sendTrack: xml length "+xml.length)
     var kys=Object.keys(xml);
     // var parser = new DOMParser();
@@ -126,6 +124,8 @@ export function sendRegionTracks(){
     var tdiff = 0;
     var grmDataFnd = false;
     for (ii=0;ii<_currTrailList.length;ii++){
+        if (_currTrailList[ii].title.toLowerCase()==="all")
+            continue;
         trailNamesLst.push(_currTrailList[ii].title); 
         xmlLst.push(_currTrailList[ii].gpxText);
         trkClrLst.push(getTrailColor(ii));
@@ -166,7 +166,6 @@ async function fillTrailRgnDrpDn() {
     try {
     	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
         const results = await wixData.query("skiTrailsTable")
-            .limit(20)
             .eq("trailType", trType)
             .ascending("viewSort")
             .find();
@@ -198,7 +197,6 @@ async function fillTrailNameDrpDn(rgn){
 		console.log("fillTrailNameDrpDn",rgn);
 		try {
 			const results = await wixData.query("skiTrailsTable")
-				.limit(100)
 				.eq("trailType",trType)
 				.ascending("viewSort")
 				.find();
@@ -212,7 +210,6 @@ async function fillTrailNameDrpDn(rgn){
 		try {
 			const results = await wixData.query("skiTrailsTable")
 				// Get the max possible results from the query
-				.limit(100)
 				.eq("trailRegion", rgn)
 				.eq("trailType",trType)
 				.ascending("viewSort")
@@ -230,6 +227,7 @@ async function fillTrailNameDrpDn(rgn){
 	}
     let ctlLgth=fndTrailList.length;
     _currTrailList=fndTrailList.filter(function(elmnt){return (elmnt.gpxText!==undefined);})
+    _currTrailList.unshift({title:"All",gpxText:""});
     console.log("fillTrailNameDrpDn reduced trailList from "+ctlLgth+" to "+_currTrailList.length)
 
     const titlesOnly = _currTrailList.map(item => item.title);   
@@ -255,8 +253,8 @@ async function fillTrailNameDrpDn(rgn){
 	}
 	// $w('#trailNameDrpDn').selectedIndex = 0;
 	// $w('#trailNameDrpDn').value="";
-	_currTrailName = _currTrailList[0].title;
-    $w('#trailNameDrpDn').selectedIndex=0;
+	_currTrailName = _currTrailList[1].title;
+    $w('#trailNameDrpDn').selectedIndex=1;
 	console.log("fillTrailName set trail to "+_currTrailName);
 }
 
@@ -264,21 +262,20 @@ export async function doTrailRgn_change(){
     let rgn=$w('#trailRgnDrpDn').options[$w('#trailRgnDrpDn').selectedIndex].label
     console.log("trailRgnDrpDn_change "+rgn)
     await fillTrailNameDrpDn(rgn);
-    if ($w('#showAllRegionSwitch').checked){
-        return sendRegionTracks();
-    } else {
-        return sendTrack(_currTrailName,_currTrailList[0].gpxText)
-    }
+    return sendTrack()
 }
 
 export function trailNameDrpDn_change(event) {
     _currTrailName=$w('#trailNameDrpDn').value;
+    if (_currTrailName.toLowerCase()==="all"){
+        return sendRegionTracks();
+    }
+
     for (var i=0;i<_currTrailList.length;i++){
         if (_currTrailList[i].title===_currTrailName)
             break;
     }
-    $w('#showAllRegionSwitch').checked = false;
-    sendTrack(_currTrailName, _currTrailList[i].gpxText);
+    sendTrack();
 }
 
 export function trailRgnDrpDn_change(event) {
@@ -311,7 +308,6 @@ export function showAllRegionSwitch_change(event) {
 export function trailTypeRadio_change(event) {
     const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
     _groomTableData=[];
-    $w('#showAllRegionSwitch').checked = false;
     fillTrailRgnDrpDn();
     doTrailRgn_change();
 }

@@ -105,8 +105,8 @@
       var deg_rads = (2*Math.PI)/360.0;
       const initCtr={lat: 41.37527, lng: -111.908221}
       const ONORDIC_BOUNDS = {
-        north: 41.397,
-        south: 41.353,
+        north: 41.400,
+        south: 41.350,
         west: -111.928,
         east: -111.898,
       };        
@@ -141,6 +141,22 @@
           },
           zoom: 14,
           center: initCtr,
+          mapTypeControl: false,
+          /*mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.TOP_CENTER,
+          },*/
+          zoomControl: true,
+          zoomControlOptions: {
+            position: google.maps.ControlPosition.TOP_LEFT,
+          },
+          scaleControl: true,
+          streetViewControl: true,
+          streetViewControlOptions: {
+            position: google.maps.ControlPosition.LEFT_TOP,
+          },
+          fullscreenControl: true,
+          
           /*"terrain"*/
           mapTypeId: "terrain",
         });
