@@ -13,7 +13,8 @@ $w.onReady(function () {
     console.log("onReady # entries in groomTable "+_groomTableData.length)
     // doTest();
     let htmlText = '<div style="background-color:rgb(100,200,0);font-size:18px;text-align:center">';
-    htmlText=htmlText.concat('Pick Trail Region and Trail from the drop-dwons lists; When it appears on the map, click the icon for more detail</div>');
+    htmlText=htmlText.concat('Pick Trail Region and Trail from the drop-dwons lists; When it appears on the map, click the icon for more detail.');
+    htmlText=htmlText.concat('<br>Pick All at the top of either list to view all</div>');
     $w('#mapInstructionText').html=htmlText;
 
 	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Bike", value: 'bike' }]
@@ -78,7 +79,7 @@ export function sendTrack(){
     const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
     console.log("sendTrack found groomtable data lgth "+_groomTableData.length+"; or trail "+name);
     for (var i=0;i<_groomTableData.length;i++){
-        console.log("sendTrack for iteration "+i+"; found trail "+_groomTableData[i].trailName.toLowerCase());
+        // console.log("sendTrack for iteration "+i+"; found trail "+_groomTableData[i].trailName.toLowerCase());
         if (_groomTableData[i].trailName.toLowerCase()===name.toLowerCase()){
             console.log("sendTrack: found trail "+name)
             tdiff = time_ms - _groomTableData[i].fullDate.getTime();
@@ -176,9 +177,9 @@ async function fillTrailRgnDrpDn() {
             let rgnsOpts = rgns.map(curr => {
                 return {label:curr, value:curr};})
             console.log("fillTrailRgnDrpDn: "+rgnsOpts.length+"; type "+typeof(rgnsOpts) )
-            rgnsOpts.push({ label: "All", value: "All" })
+            rgnsOpts.unshift({ label: "All", value: "All" })
             $w('#trailRgnDrpDn').options = rgnsOpts;
-            $w('#trailRgnDrpDn').selectedIndex = 0; // rgnsOpts.length - 1;
+            $w('#trailRgnDrpDn').selectedIndex = 1; // rgnsOpts.length - 1;
 
     }
     catch (err) {
@@ -193,7 +194,7 @@ async function fillTrailNameDrpDn(rgn){
     let fndTrailList=[];
     const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
     
-	if (rgn === "All") {
+	if (rgn.toLowerCase() === "all") {
 		console.log("fillTrailNameDrpDn",rgn);
 		try {
 			const results = await wixData.query("skiTrailsTable")
@@ -243,7 +244,7 @@ async function fillTrailNameDrpDn(rgn){
 	let ndx = -1;
 
 	for (i = 0; i < $w('#trailRgnDrpDn').options.length; i++) {
-		if ($w('#trailRgnDrpDn').options[i].label === vlu) {
+		if ($w('#trailRgnDrpDn').options[i].label.toLowerCase() === vlu.toLowerCase()) {
 			ndx = i;
 			break;
 		}
