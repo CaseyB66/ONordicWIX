@@ -282,7 +282,10 @@ export class groomReportTable {
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailName"] + '</td>')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomTime"] + '</td>')
 					if (trType==='ski'){
-						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["classicSet"] + '</td>')
+						if (srtRws[i]["classicSet"]===true)
+							rwHtml = rwHtml.concat('<td style="border: thin solid black">' + "Yes" + '</td>')
+						else
+							rwHtml = rwHtml.concat('<td style="border: thin solid black">' + "No" + '</td>')
 					}
 					if (this.reportType === 2) {
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomMach"] + '</td>')
