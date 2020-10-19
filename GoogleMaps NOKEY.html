@@ -310,16 +310,23 @@
               infoWindows.push(new google.maps.InfoWindow({
                     content: contentString
                 }));
+              const this_icon = {
+                path:
+                "M 0,0, 0,-15, 15,-15, 15,0, 0,0 z",
+                fillColor: event.data.value.trkColor,
+                fillOpacity: 0.5,
+                scale: 1,
+                strokeColor: event.data.value.trkColor,
+                strokeOpacity: 0.5,
+                strokeWeight: 2,
+              };
+              
               trailmarkers.push(new google.maps.Marker({
                   position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
                   map: map,
                   title: event.data.label,
                   label: {text:event.data.label,color:event.data.value.trkColor,fontSize:'12px'},
-                  icon: {
-                      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-                      scale: 5,
-                      strokeColor:event.data.value.trkColor,
-                    }
+                  icon: this_icon
                   // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
               }));
               google.maps.event.addListener(trailmarkers[0], 'click', function() {
@@ -379,16 +386,23 @@
                   }));
                 console.log("addregiontracks for ii="+ii+", infoWindow: "+contentString+"; length is "+infoWindows.length);
                 meanlat+=pntArryDict.meanlat/deg_rads; meanlng+=pntArryDict.meanlon/deg_rads;
+                const this_icon = {
+                  path:
+                  "M 0,0, 0,-15, 15,-15, 15,0, 0,0 z",
+                  fillColor: event.data.value.trkColor[ii],
+                  fillOpacity: 0.5,
+                  scale: 1,
+                  strokeColor: event.data.value.trkColor[ii],
+                  strokeOpacity: 0.5,
+                  strokeWeight: 2,
+                };
+                
                 trailmarkers.push(new google.maps.Marker({
                     position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
                     map: map,
                     title: event.data.label[ii],
                     label: {text:event.data.label[ii],color:event.data.value.trkColor[ii],fontSize:'12px'},
-                    icon: {
-                        path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-                        scale: 5,
-                        strokeColor:event.data.value.trkColor[ii],
-                      }
+                    icon: this_icon
                     // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
                 }));
                 attachMarkerMessage(trailmarkers[ii], contentString);

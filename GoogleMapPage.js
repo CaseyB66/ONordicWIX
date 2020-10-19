@@ -13,7 +13,7 @@ $w.onReady(function () {
     console.log("onReady # entries in groomTable "+_groomTableData.length)
     // doTest();
     let htmlText = '<div style="background-color:rgb(100,200,0);font-size:18px;text-align:center">';
-    htmlText=htmlText.concat('Pick Trail Region and Trail from the drop-dwons lists; When it appears on the map, click the icon for more detail.');
+    htmlText=htmlText.concat('Pick Trail Region and Trail from the drop-down lists; When it appears on the map, click the icon for more detail.');
     htmlText=htmlText.concat('<br>Pick All at the top of either list to view all</div>');
     $w('#mapInstructionText').html=htmlText;
 
