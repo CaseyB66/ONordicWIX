@@ -50,6 +50,7 @@ export class groomReportTable {
 		};
 		return thedate.toLocaleDateString("en-US", dateStrOpts);
 	}
+
 	async _skiGroomingTableQuery(trType) {
 		let mchfltr = '1';
 		if (this.reportType === 2)
@@ -124,11 +125,11 @@ export class groomReportTable {
 	}
 
 	getSkiDifficultyObject(dffclty){
-		let color4 = "background-color:rgb(250,0,0)";
-		let color5 = "background-color:rgb(200,0,0)";
-		let color1 = "background-color:rgb(0,250,0)";
-		let color2 = "background-color:rgb(100,230,0)";
-		let color3 = "background-color:rgb(200,200,0)";
+		let color4 = "rgb(250,0,0)";
+		let color5 = "rgb(200,0,0)";
+		let color1 = "rgb(0,250,0)";
+		let color2 = "rgb(100,230,0)";
+		let color3 = "rgb(200,200,0)";
 		let rtrn={color:color1,descr:"Easy"};
 		if (dffclty===2){
 			rtrn.color=color2;
@@ -153,10 +154,10 @@ export class groomReportTable {
 		var today = new Date();
 		var time_ms = today.getTime();
 		var tdiff = time_ms - rowDate.getTime();
-		let colorRed = "background-color:rgb(250,0,0)";
-		let colorGreen = "background-color:rgb(0,250,0)";
-		let colorYellow = "background-color:rgb(200,200,0)";
-		if (tdiff < 18 * 3600000)
+		let colorRed = "rgb(250,0,0)";
+		let colorGreen = "rgb(0,250,0)";
+		let colorYellow = "rgb(200,200,0)";
+		if (tdiff < 16 * 3600000)
 			return colorGreen;
 		if (tdiff < 24 * 3600000)
 			return colorYellow;
@@ -256,8 +257,11 @@ export class groomReportTable {
 		let rwHtml = ""
 		let rgnHtml = ""
 		if (srtRws.length < 1) {
+			let txt="No Data!";
+			if (this.reportType>0)
+				txt=txt.concat(" Try different region or longer time period")
 			tblsrc = tblsrc.concat('<tr style="background-color:rgb(180,0,0);border: 1px solid black;border-collapse: collapse;">\
-			<td colspan="4">No Data!! Try different region or longer duration</td>\
+			<td colspan="4">'+txt+'</td>\
 		</tr>');
 			tblsrc = tblsrc.concat('</table>');
 
@@ -276,8 +280,8 @@ export class groomReportTable {
 				if (((this.reportType === 0) && (srtRws[i]["priority"] === 1) && (thisTrail !== srtRws[i]["trailName"])) ||
 					(this.reportType === 2) ||
 					((this.reportType === 1) && (thisTrail !== srtRws[i]["trailName"]))) {
-					// console.log("buildGrmRptTable OK: " + srtRws[i]["trailName"]);
-					var rowClr=this.getDateColor(srtRws[i]["fullDate"])
+					var rowClr='background-color:'+this.getDateColor(srtRws[i]["fullDate"])
+					console.log('buildGrmRptTable found rowClr '+rowClr);
 					rwHtml = rwHtml.concat('<tr style="' + rowClr + ';border: 1px solid black;border-collapse: collapse;">')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailName"] + '</td>')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomTime"] + '</td>')

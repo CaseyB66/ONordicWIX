@@ -11,7 +11,6 @@ $w.onReady(function () {
 	$w('#genCmntText').hide();
 
 	fillTrailRgnDrpDn();
-	console.log("onReady report options length " + $w('#reportOptionsRadio').options.length + "; first " + $w('#reportOptionsRadio').options[0].label);
 	let hoursopts = [{ label: "1  Month", value: "720" },{ label: "1 Week", value: "168" },
 		{ label: "48 Hours", value: "48" },
 		{ label: "36 Hours", value: "36" },
@@ -26,9 +25,9 @@ $w.onReady(function () {
 	let dateTxt = tdy.toDateString();
 	let htmltxt = '<div style="font-size:18px;">' + dateTxt + '</div>'
 	$w('#grmRptDateTxt').html = htmltxt;
-	$w('#reportOptionsRadio').options = [{ label: "Brief", value: '0' }, { label: "All Trails", value: '1' }, { label: "Full", value: '2' }]
+	$w('#reportOptionsRadio').options = [{ label: "All Trails", value: '1' }, { label: "Full", value: '2' }]
 	$w('#reportOptionsRadio').selectedIndex = 0;
-	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Bike", value: 'bike' }]
+	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' }]
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w('#grmRptTable').html = "";
 });
@@ -80,7 +79,7 @@ async function fillGrmRptTbl() {
 	};
 	let timStr = ""
 	// rgn = "South", hrs = 24, rprtTyp = 0
-	let ndx = $w('#reportOptionsRadio').selectedIndex;
+	let ndx = Number($w('#reportOptionsRadio').options[$w('#reportOptionsRadio').selectedIndex].value);
 	let grmRptClass = new groomReportTable(rptrgn, $w('#grmRptHours').value, ndx);
 	var tblhtml=await grmRptClass.fillGrmRptTbl(trType);
 	// console.log("fillGrmRptTbl html: "+tblhtml)

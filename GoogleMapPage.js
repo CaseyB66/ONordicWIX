@@ -17,7 +17,7 @@ $w.onReady(function () {
     htmlText=htmlText.concat('<br>Pick All at the top of either list to view all</div>');
     $w('#mapInstructionText').html=htmlText;
 
-	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Bike", value: 'bike' }]
+	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' }]
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w("#googleMapHTML").onMessage((event)=>{
 
@@ -179,7 +179,7 @@ async function fillTrailRgnDrpDn() {
             console.log("fillTrailRgnDrpDn: "+rgnsOpts.length+"; type "+typeof(rgnsOpts) )
             rgnsOpts.unshift({ label: "All", value: "All" })
             $w('#trailRgnDrpDn').options = rgnsOpts;
-            $w('#trailRgnDrpDn').selectedIndex = 1; // rgnsOpts.length - 1;
+            $w('#trailRgnDrpDn').selectedIndex = 0; // rgnsOpts.length - 1;
 
     }
     catch (err) {
@@ -254,8 +254,8 @@ async function fillTrailNameDrpDn(rgn){
 	}
 	// $w('#trailNameDrpDn').selectedIndex = 0;
 	// $w('#trailNameDrpDn').value="";
-	_currTrailName = _currTrailList[1].title;
-    $w('#trailNameDrpDn').selectedIndex=1;
+	_currTrailName = _currTrailList[0].title;
+    $w('#trailNameDrpDn').selectedIndex=0;
 	console.log("fillTrailName set trail to "+_currTrailName);
 }
 
@@ -263,10 +263,13 @@ export async function doTrailRgn_change(){
     let rgn=$w('#trailRgnDrpDn').options[$w('#trailRgnDrpDn').selectedIndex].label
     console.log("trailRgnDrpDn_change "+rgn)
     await fillTrailNameDrpDn(rgn);
-    return sendTrack()
+    if (_currTrailName.toLowerCase() === "all")
+        return sendRegionTracks();
+    else
+        return sendTrack()
 }
 
-export function trailNameDrpDn_change(event) {
+export function doTrailName_chnge(){
     _currTrailName=$w('#trailNameDrpDn').value;
     if (_currTrailName.toLowerCase()==="all"){
         return sendRegionTracks();
@@ -277,6 +280,10 @@ export function trailNameDrpDn_change(event) {
             break;
     }
     sendTrack();
+}
+
+export function trailNameDrpDn_change(event) {
+    doTrailName_chnge();
 }
 
 export function trailRgnDrpDn_change(event) {
@@ -300,10 +307,6 @@ function doTest(){
         console.log("doTest caught math error "+err);
     }
 
-}
-
-export function showAllRegionSwitch_change(event) {
-    doTrailRgn_change();
 }
 
 export function trailTypeRadio_change(event) {

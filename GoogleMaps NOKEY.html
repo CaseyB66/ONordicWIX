@@ -284,7 +284,7 @@
               console.log("addTrack found "+pointarray[0].length+" points")
               polylinetrks.push(new google.maps.Polyline({
                   path: pointarray[0],
-                  strokeColor: event.data.value.trkColor,
+                  strokeColor: event.data.value.grmColor,
                   strokeWeight: 3,
                   title: event.data.label,
               }));
@@ -297,11 +297,12 @@
                   contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
                   contentString=contentString.concat(' km)');
                   contentString=contentString.concat('<div style="line-height:100%;'+
-                    event.data.value.grmColor+'">Last Groom: '+
+                    'background-color:'+event.data.value.grmColor+'">Last Groom: '+
                     event.data.value.grmDate+'<div>');
-                  contentString=contentString.concat('<div style="line-height:100%;'+event.data.value.skiDifficulty.color+'">');
+                  contentString=contentString.concat('<div style="line-height:100%;'+
+                    'background-color:'+event.data.value.skiDifficulty.color+'">');
                   if (event.data.value.trType==="ski"){
-                          contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+                     contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
                   }else{
                     contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
 	                }
@@ -312,12 +313,12 @@
                 }));
               const this_icon = {
                 path:
-                "M 0,0, 0,-15, 15,-15, 15,0, 0,0 z",
-                fillColor: event.data.value.trkColor,
-                fillOpacity: 0.5,
+                "M 0,0, 0,-18, 18,-18, 15,0, 0,0 z",
+                fillColor: event.data.value.grmColor,
+                fillOpacity: 0.2,
                 scale: 1,
-                strokeColor: event.data.value.trkColor,
-                strokeOpacity: 0.5,
+                strokeColor: event.data.value.grmColor,
+                strokeOpacity: 0.2,
                 strokeWeight: 2,
               };
               
@@ -325,7 +326,7 @@
                   position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
                   map: map,
                   title: event.data.label,
-                  label: {text:event.data.label,color:event.data.value.trkColor,fontSize:'12px'},
+                  label: {text:event.data.label,color:event.data.value.grmColor,fontSize:'14px',fontWeight:'bold'},
                   icon: this_icon
                   // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
               }));
@@ -360,7 +361,7 @@
                 console.log("addregiontracks found "+pointarray[ii].length+" points")
                 polylinetrks.push(new google.maps.Polyline({
                     path: pointarray[ii],
-                    strokeColor: event.data.value.trkColor[ii],
+                    strokeColor: event.data.value.grmColor[ii],
                     strokeWeight: 3,
                     title: event.data.label[ii],
                 }));
@@ -372,11 +373,12 @@
                     contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
                     contentString=contentString.concat(' km)');
                     contentString=contentString.concat('<div style="line-height:100%;'+
-                      event.data.value.grmColor[ii]+'">Last Groom: '+
+                      'background-color:'+event.data.value.grmColor[ii]+'">Last Groom: '+
                       event.data.value.grmDate[ii]+'<div>');
-                    contentString=contentString.concat('<div style="line-height:100%;'+event.data.value.skiDifficulty[ii].color+'">');
+                    contentString=contentString.concat('<div style="line-height:100%;');
+                    contentString=contentString.concat('background-color:'+event.data.value.skiDifficulty[ii].color+'">');
                     if (event.data.value.trType==="ski"){
-                            contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty[ii].descr+'<div>');
+                      contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty[ii].descr+'<div>');
                     }else{
                       contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty[ii].descr+'<div>');
                     }
@@ -388,12 +390,12 @@
                 meanlat+=pntArryDict.meanlat/deg_rads; meanlng+=pntArryDict.meanlon/deg_rads;
                 const this_icon = {
                   path:
-                  "M 0,0, 0,-15, 15,-15, 15,0, 0,0 z",
-                  fillColor: event.data.value.trkColor[ii],
-                  fillOpacity: 0.5,
+                  "M 0,0, 0,-18, 18,-18, 18,0, 0,0 z",
+                  fillColor: event.data.value.grmColor[ii],
+                  fillOpacity: 0.2,
                   scale: 1,
-                  strokeColor: event.data.value.trkColor[ii],
-                  strokeOpacity: 0.5,
+                  strokeColor: event.data.value.grmColor[ii],
+                  strokeOpacity: 0.2,
                   strokeWeight: 2,
                 };
                 
@@ -401,7 +403,7 @@
                     position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
                     map: map,
                     title: event.data.label[ii],
-                    label: {text:event.data.label[ii],color:event.data.value.trkColor[ii],fontSize:'12px'},
+                    label: {text:event.data.label[ii],color:event.data.value.grmColor[ii],fontSize:'14px',fontWeight:'bold'},
                     icon: this_icon
                     // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
                 }));
