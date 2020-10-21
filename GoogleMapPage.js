@@ -17,6 +17,18 @@ $w.onReady(function () {
     htmlText=htmlText.concat('<br>Pick All at the top of either list to view all</div>');
     $w('#mapInstructionText').html=htmlText;
 
+    _grmRpt = new groomReportTable("All", 720, 1);
+    const clrDefn=_grmRpt.getDateColorDefn();
+    htmlText = '<div style="background-color:rgb(200,200,200);font-size:12px;text-align:center">';
+    htmlText=htmlText.concat('Trail Colors indicate recent grooming');
+    htmlText=htmlText.concat('<div style="background-color:'+clrDefn[0].color+';">Within '+clrDefn[0].hrs+' hours</div>');
+    htmlText=htmlText.concat('<div style="background-color:'+clrDefn[1].color+';">Within '+clrDefn[1].hrs+' hours</div>');
+    htmlText=htmlText.concat('<div style="background-color:'+clrDefn[2].color+';">More than '+clrDefn[1].hrs+' hours</div>');
+    htmlText=htmlText.concat('</div>');
+    $w("#colorCodesHover").html=htmlText;
+    $w("#colorCodesHover").show();
+
+
 	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' }]
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w("#googleMapHTML").onMessage((event)=>{

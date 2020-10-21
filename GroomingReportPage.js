@@ -1,7 +1,6 @@
 import wixWindow from 'wix-window';
 import wixData from 'wix-data';
-
-import { groomReportTable } from 'public/GroomReport.js';
+import {groomReportTable} from 'public/GroomReport.js' 
 
 let _trailList = []
 let _winHt = 0;
@@ -30,6 +29,22 @@ $w.onReady(function () {
 	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' }]
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w('#grmRptTable').html = "";
+    htmltxt = '<div style="background-color:rgb(100,200,0);font-size:14px;text-align:center">';
+    htmltxt=htmltxt.concat('All Trails: show latest groom date and classic tracks for all trails within the Time Period');
+    htmltxt=htmltxt.concat('<br>Full: show all information for all dates in chosen Time Period</div>');
+	$w('#reportOptionsHelp').html=htmltxt;
+	$w('#reportOptionsHelp').hide();
+
+    const _grmRpt = new groomReportTable("All", 720, 1);
+    const clrDefn=_grmRpt.getDateColorDefn();
+    htmltxt = '<div style="background-color:rgb(200,200,200);font-size:12px;text-align:center">';
+    htmltxt=htmltxt.concat('Table Colors indicate recent grooming');
+    htmltxt=htmltxt.concat('<div style="background-color:'+clrDefn[0].color+';">Within '+clrDefn[0].hrs+' hours</div>');
+    htmltxt=htmltxt.concat('<div style="background-color:'+clrDefn[1].color+';">Within '+clrDefn[1].hrs+' hours</div>');
+    htmltxt=htmltxt.concat('<div style="background-color:'+clrDefn[2].color+';">More than '+clrDefn[1].hrs+' hours</div>');
+    htmltxt=htmltxt.concat('</div>');
+    $w("#colorCodesHover").html=htmltxt;
+    $w("#colorCodesHover").show();
 });
 
 function fillTrailRgnDrpDn() {
@@ -115,8 +130,28 @@ export function reportOptionsRadio_change(event) {
 
 
 export function trailTypeRadio_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
+	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
+    let htmlText = '<div style="background-color:rgb(100,200,0);font-size:14px;text-align:center">';
+	if (trType.toLowerCase()==='ski'){
+		htmlText=htmlText.concat('All Trails: show latest groom date and classic tracks for all trails within the Time Period');
+	} else {
+		htmlText=htmlText.concat('All Trails: show latest groom date for all trails within the Time Period');
+	}
+	htmlText=htmlText.concat('<br>Full: show all information for all dates in chosen Time Period</div>');
+	$w('#reportOptionsHelp').html=htmlText;
 	fillTrailRgnDrpDn();
 	fillGrmRptTbl()
+}
+
+export function reportOptionsHelp_click(event) {
+	if ($w('#reportOptionsHelp').isVisible)
+		$w('#reportOptionsHelp').hide();
+}
+
+export function reportOptionsRadio_mouseIn(event) {
+	$w('#reportOptionsHelp').show();
+}
+
+export function reportOptionsRadio_mouseOut(event) {
+	$w('#reportOptionsHelp').hide();
 }

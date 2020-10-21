@@ -15,10 +15,14 @@ export function getTrailColor(trct){
 	return clrs[clrNdx];
 }
 
+const colorGreen = "rgb(0,250,154)";
+const colorRed = "rgb(250,80,72)";
+const colorYellow = "rgb(238,232,170)";
+
 export class groomReportTable {
 	// rprtType can be 0 for "Brief", 1 for "All Trails", 3 for "Full"
 	constructor(rgn = "South", hrs = 24, rprtTyp = 0) {
-		this.hours = hrs;
+		this.hours = Number(hrs);
 		this.region = rgn;
 		let tdy = new Date();
 		this.reprtDate = tdy.toDateString();
@@ -29,6 +33,10 @@ export class groomReportTable {
 		var time_ms = today.getTime();
 		this.fltrDate = new Date(time_ms - this.hours * 60 * 60000);
 		this.bSmallTable = false;
+		this.dateColorDefn = [{hrs:16,color:colorGreen},
+			{hrs:24,color:colorYellow},
+			{hrs:24*365,color:colorRed}];
+		console.log('groomReportTable defined dateColorDefn: '+this.dateColorDefn[0].hrs)
 	}
 
 	setSmallTable(bval){
@@ -154,14 +162,28 @@ export class groomReportTable {
 		var today = new Date();
 		var time_ms = today.getTime();
 		var tdiff = time_ms - rowDate.getTime();
-		let colorRed = "rgb(250,0,0)";
-		let colorGreen = "rgb(0,250,0)";
-		let colorYellow = "rgb(200,200,0)";
-		if (tdiff < 16 * 3600000)
-			return colorGreen;
-		if (tdiff < 24 * 3600000)
-			return colorYellow;
-		return colorRed;
+		return this.getDateColorByHours(tdiff/3600000);
+	}
+
+	getDateColorByHours(hrs){
+		let ii=0;
+		let rtrn=this.dateColorDefn[this.dateColorDefn.length-1].color;
+		try {
+			for (ii=0;ii<this.dateColorDefn.length;ii++){
+				if (hrs<this.dateColorDefn[ii].hrs){
+					rtrn = this.dateColorDefn[ii].color;
+					break;
+				}
+			}
+		} catch (err){
+			console.log('getDateColorByHours caught err '+err);
+		}
+		console.log('getDateColorByHours found color for hrs = '+hrs+' = '+rtrn);
+		return rtrn;
+	}
+
+	getDateColorDefn() {
+		return this.dateColorDefn;
 	}
 
 	async _skiGroomCommentTableQuery(trType) {
@@ -224,7 +246,7 @@ export class groomReportTable {
 			}
 			tblsrc = tblsrc.concat('<tr style="background-color:rgb(250,250,250);border: 1px solid black;">\
 			<th style="text-align: left;border: 1px solid black;">Trail Name</th> \
-			<th style="text-align: left;border: 1px solid black;">Time</th>;');
+			<th style="text-align: left;border: 1px solid black;">Time last Groom</th>;');
 			if (trType==='ski'){
 				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">ClscSet</th>');
 			}
@@ -245,7 +267,7 @@ export class groomReportTable {
 
 			tblsrc = tblsrc.concat('<tr style="background-color:rgb(250,250,250);border: 1px solid black;border-collapse: collapse;"> \
 			<th style="text-align: left">Trail Name</th> \
-			<th style="text-align: left">Time</th>');
+			<th style="text-align: left">Time last Groom</th>');
 			if (trType==='ski'){
 				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">ClscSet</th>');
 			}
