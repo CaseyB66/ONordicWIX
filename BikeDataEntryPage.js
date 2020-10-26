@@ -286,6 +286,7 @@ async function fillGroomersDrpDn(){
 function fillTrailRgnDrpDn(){
 	wixData.query("skiTrailsTable")
 	.limit(20)
+	.gt("reportPriority",-1)
 	.eq("trailType","bike")
 	.find()
 	.then(results =>{
@@ -332,6 +333,7 @@ async function fillTrailNameDrpDn(rgn) {
 		try {
 			const results = await wixData.query("skiTrailsTable")
 				.limit(100)
+				.gt("reportPriority",-1)
 				.eq("trailType","bike")
 				.ascending("viewSort")
 				.find();
@@ -349,6 +351,7 @@ async function fillTrailNameDrpDn(rgn) {
 			const results = await wixData.query("skiTrailsTable")
 				// Get the max possible results from the query
 				.limit(100)
+				.gt("reportPriority",-1)
 				.eq("trailRegion", rgn)
 				.eq("trailType","bike")
 				.ascending("viewSort")

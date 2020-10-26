@@ -180,6 +180,7 @@ async function fillTrailRgnDrpDn() {
     	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
         const results = await wixData.query("skiTrailsTable")
             .eq("trailType", trType)
+            .gt("reportPriority",-1)
             .ascending("viewSort")
             .find();
             const rgnsMap = results.items.map(item => item.trailRegion);
@@ -211,6 +212,7 @@ async function fillTrailNameDrpDn(rgn){
 		try {
 			const results = await wixData.query("skiTrailsTable")
 				.eq("trailType",trType)
+                .gt("reportPriority",-1)
 				.ascending("viewSort")
 				.find();
 				fndTrailList = results.items;
@@ -225,6 +227,7 @@ async function fillTrailNameDrpDn(rgn){
 				// Get the max possible results from the query
 				.eq("trailRegion", rgn)
 				.eq("trailType",trType)
+                .gt("reportPriority",-1)
 				.ascending("viewSort")
 				.find();
                 const titlesOnly = results.items.map(item => item.title);   

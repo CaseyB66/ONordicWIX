@@ -287,6 +287,7 @@
                   strokeColor: event.data.value.grmColor,
                   strokeWeight: 3,
                   title: event.data.label,
+                	highlightTrack: null
               }));
               polylinetrks[0].setMap(map);
 
@@ -327,11 +328,49 @@
                   map: map,
                   title: event.data.label,
                   label: {text:event.data.label,color:event.data.value.grmColor,fontSize:'14px',fontWeight:'bold'},
-                  icon: this_icon
+                  icon: this_icon,
+                	infoWindowOpen: false
                   // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
               }));
               google.maps.event.addListener(trailmarkers[0], 'click', function() {
-                infoWindows[0].open(map,trailmarkers[0]);
+                if (trailmarkers[0].infoWindowOpen===false){
+                  trailmarkers[0].infoWindowOpen=true;
+                  polylinetrks[0].highlightTrack=(new google.maps.Polyline({
+                      path: pointarray[0],
+                      strokeColor: 'rgb(64,64,64)',
+                      strokeWeight: 6,
+                      title: event.data.label,
+                    	map: trailmarkers[0].map
+                  }));
+	                infoWindows[0].open(map,trailmarkers[0]);
+                  google.maps.event.addListener(infoWindows[0], 'closeclick', function () {
+                    console.log('trailMarker closeClick')
+	                  polylinetrks[0].highlightTrack.setMap(null);
+	                  polylinetrks[0].highlightTrack=null;
+                    infoWindows[0].setMap(null);
+                    trailmarkers[0].infoWindowOpen=false;
+                  });
+                }
+              });
+              google.maps.event.addListener(polylinetrks[0], 'click', function() {
+                if (trailmarkers[0].infoWindowOpen===false){
+                  trailmarkers[0].infoWindowOpen=true;
+                  polylinetrks[0].highlightTrack=(new google.maps.Polyline({
+                      path: pointarray[0],
+                      strokeColor: 'rgb(64,64,64)',
+                      strokeWeight: 6,
+                      title: event.data.label,
+                    	map: trailmarkers[0].map
+                  }));
+	                infoWindows[0].open(map,trailmarkers[0]);
+                  google.maps.event.addListener(infoWindows[0], 'closeclick', function () {
+                    console.log('polyLine closeClick')
+	                  polylinetrks[0].highlightTrack.setMap(null);
+	                  polylinetrks[0].highlightTrack=null;
+                    infoWindows[0].setMap(null);
+                    trailmarkers[0].infoWindowOpen=false;
+                  });
+                }
               });
               map.panTo({lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads});
 

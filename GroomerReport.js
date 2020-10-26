@@ -94,6 +94,8 @@ export class groomReportTable {
 		for (var j = 0; j < trlDnItems.length; j++) {
 			if (trlDnItems[j] === undefined)
 				continue;
+			if ( trlDnItems[j]["trailRef"]["reportPriority"]<0)
+				continue;
 			if ((trlDnItems[j]["trailRef"]["trailType"]===trType) && ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"]))) {
 				let machtxt = "None";
 				if (trlDnItems[j]["groomMachine"] === '1') {
