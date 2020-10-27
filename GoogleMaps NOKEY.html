@@ -100,7 +100,6 @@
       var polylinetrks=[];
       var trailmarkers=[];
       var nordicmarker=null;
-      var pointarray = [];
       var infoWindow = [];
       var deg_rads = (2*Math.PI)/360.0;
       const initCtr={lat: 41.37527, lng: -111.908221}
@@ -189,7 +188,6 @@
           trailmarkers=[];
         }
         infoWindows = [];
-        pointarray = [];
       }
 
       function parsePointArray(xml){
@@ -253,133 +251,137 @@
       
       // Attaches an info window to a marker with the provided message. When the
       // marker is clicked, the info window will open with the secret message.
-      function attachMarkerMessage(marker, msg) {
-        const infowindow = new google.maps.InfoWindow({
-          content: msg,
+      function attachMarkerMessage(trlmrkr, poly, info) {
+        google.maps.event.addListener(trlmrkr, 'click', function() {
+          if (trlmrkr.infoWindowOpen===false){
+            trlmrkr.infoWindowOpen=true;
+            poly.highlightTrack=(new google.maps.Polyline({
+                path: poly.getPath(),
+                strokeColor: 'rgb(64,64,64)',
+                strokeWeight: 6,
+                title: poly.title,
+                map: trlmrkr.map
+            }));
+            info.open(map,trlmrkr);
+            google.maps.event.addListener(info, 'closeclick', function () {
+              console.log('trailMarker closeClick')
+              poly.highlightTrack.setMap(null);
+              poly.highlightTrack=null;
+              info.setMap(null);
+              trlmrkr.infoWindowOpen=false;
+            });
+          }
         });
-        marker.addListener("click", () => {
-          infowindow.open(marker.get("map"), marker);
+        
+        google.maps.event.addListener(poly, 'click', function() {
+          if (trlmrkr.infoWindowOpen===false){
+            trlmrkr.infoWindowOpen=true;
+            poly.highlightTrack=(new google.maps.Polyline({
+                path: poly.getPath(),
+                strokeColor: 'rgb(64,64,64)',
+                strokeWeight: 6,
+                title: poly.title,
+                map: trlmrkr.map
+            }));
+            info.open(map,trlmrkr);
+            google.maps.event.addListener(info, 'closeclick', function () {
+              console.log('polyLine closeClick')
+              poly.highlightTrack.setMap(null);
+              poly.highlightTrack=null;
+              info.setMap(null);
+              trlmrkr.infoWindowOpen=false;
+            });
+          }
         });
       }
-
+      
+      // Performs addloc event
+      function doAddLoc(event) {
+        var latLng = new google.maps.LatLng(event.data.value['lat'],event.data.value['lng']);
+        var marker = new google.maps.Marker({
+        position: latLng,
+        title: event.data.label,
+        label: event.data.label,
+        map: map
+        });
+      }
+      
+      // Perfomr the addtrack event
+      function doAddTrack(event){
+        let ct = 0;
+        clearMapData();
+        pntArryDict=parsePointArray(event.data.value.xml);
+        console.log("addTrack found "+pntArryDict.array.length+" points")
+        polylinetrks.push(new google.maps.Polyline({
+            path: pntArryDict.array,
+            strokeColor: event.data.value.grmColor,
+            strokeWeight: 3,
+            title: event.data.label,
+            highlightTrack: null
+        }));
+        polylinetrks[0].setMap(map);
+  
+        contentString = '<div id="content">'+
+            '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label+'</b><br><br>Trail Length: ';
+            contentString=contentString.concat(pntArryDict.trailLgth.toFixed(2).toString());
+            contentString=contentString.concat(' miles (');
+            contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
+            contentString=contentString.concat(' km)');
+            contentString=contentString.concat('<div style="line-height:100%;'+
+              'background-color:'+event.data.value.grmColor+'">Last Groom: '+
+              event.data.value.grmDate+'<div>');
+            contentString=contentString.concat('<div style="line-height:100%;'+
+              'background-color:'+event.data.value.skiDifficulty.color+'">');
+            if (event.data.value.trType==="ski"){
+               contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+            }else{
+              contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
+            }
+            contentString=contentString.concat('</div></div>');
+  
+        infoWindows.push(new google.maps.InfoWindow({
+              content: contentString
+          }));
+        const this_icon = {
+          path:
+          "M 0,0, 0,-18, 18,-18, 15,0, 0,0 z",
+          fillColor: event.data.value.grmColor,
+          fillOpacity: 0.2,
+          scale: 1,
+          strokeColor: event.data.value.grmColor,
+          strokeOpacity: 0.2,
+          strokeWeight: 2,
+        };
+        
+        trailmarkers.push(new google.maps.Marker({
+            position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
+            map: map,
+            title: event.data.label,
+            label: {text:event.data.label,color:event.data.value.grmColor,fontSize:'14px',fontWeight:'bold'},
+            icon: this_icon,
+            infoWindowOpen: false
+            // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
+        }));
+        attachMarkerMessage(trailmarkers[0], polylinetrks[0], infoWindows[0])
+        map.panTo({lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads});
+  
+      var msg={
+        "type":"addtrack",
+        "label":event.data.label,
+        "value":[pntArryDict.meanlat.toFixed(4),pntArryDict.meanlon.toFixed(4)]
+      };
+      window.parent.postMessage(msg , "*");
+      }
       window.onmessage = function(event){
           if (event.data && event.data.hasOwnProperty('type')) {
             console.log("map found event type "+event.data.type+"; value "+event.data.value[0]);
             // ************ADDLOC**************
             if (event.data.type==="addloc"){
-              var latLng = new google.maps.LatLng(event.data.value['lat'],event.data.value['lng']);
-              var marker = new google.maps.Marker({
-              position: latLng,
-              title: event.data.label,
-              label: event.data.label,
-              map: map
-              });
+              doAddLoc(event);
             }
             // ************ADDTRACK**************
             if (event.data.type==="addtrack"){
-              let ct = 0;
-              clearMapData();
-              pntArryDict=parsePointArray(event.data.value.xml);
-              pointarray.push(pntArryDict.array);
-              console.log("addTrack found "+pointarray[0].length+" points")
-              polylinetrks.push(new google.maps.Polyline({
-                  path: pointarray[0],
-                  strokeColor: event.data.value.grmColor,
-                  strokeWeight: 3,
-                  title: event.data.label,
-                	highlightTrack: null
-              }));
-              polylinetrks[0].setMap(map);
-
-              contentString = '<div id="content">'+
-                  '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label+'</b><br><br>Trail Length: ';
-                  contentString=contentString.concat(pntArryDict.trailLgth.toFixed(2).toString());
-                  contentString=contentString.concat(' miles (');
-                  contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
-                  contentString=contentString.concat(' km)');
-                  contentString=contentString.concat('<div style="line-height:100%;'+
-                    'background-color:'+event.data.value.grmColor+'">Last Groom: '+
-                    event.data.value.grmDate+'<div>');
-                  contentString=contentString.concat('<div style="line-height:100%;'+
-                    'background-color:'+event.data.value.skiDifficulty.color+'">');
-                  if (event.data.value.trType==="ski"){
-                     contentString=contentString.concat('Ski Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
-                  }else{
-                    contentString=contentString.concat('Bike Difficulty: '+event.data.value.skiDifficulty.descr+'<div>');
-	                }
-                  contentString=contentString.concat('</div></div>');
-
-              infoWindows.push(new google.maps.InfoWindow({
-                    content: contentString
-                }));
-              const this_icon = {
-                path:
-                "M 0,0, 0,-18, 18,-18, 15,0, 0,0 z",
-                fillColor: event.data.value.grmColor,
-                fillOpacity: 0.2,
-                scale: 1,
-                strokeColor: event.data.value.grmColor,
-                strokeOpacity: 0.2,
-                strokeWeight: 2,
-              };
-              
-              trailmarkers.push(new google.maps.Marker({
-                  position: { lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads},
-                  map: map,
-                  title: event.data.label,
-                  label: {text:event.data.label,color:event.data.value.grmColor,fontSize:'14px',fontWeight:'bold'},
-                  icon: this_icon,
-                	infoWindowOpen: false
-                  // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
-              }));
-              google.maps.event.addListener(trailmarkers[0], 'click', function() {
-                if (trailmarkers[0].infoWindowOpen===false){
-                  trailmarkers[0].infoWindowOpen=true;
-                  polylinetrks[0].highlightTrack=(new google.maps.Polyline({
-                      path: pointarray[0],
-                      strokeColor: 'rgb(64,64,64)',
-                      strokeWeight: 6,
-                      title: event.data.label,
-                    	map: trailmarkers[0].map
-                  }));
-	                infoWindows[0].open(map,trailmarkers[0]);
-                  google.maps.event.addListener(infoWindows[0], 'closeclick', function () {
-                    console.log('trailMarker closeClick')
-	                  polylinetrks[0].highlightTrack.setMap(null);
-	                  polylinetrks[0].highlightTrack=null;
-                    infoWindows[0].setMap(null);
-                    trailmarkers[0].infoWindowOpen=false;
-                  });
-                }
-              });
-              google.maps.event.addListener(polylinetrks[0], 'click', function() {
-                if (trailmarkers[0].infoWindowOpen===false){
-                  trailmarkers[0].infoWindowOpen=true;
-                  polylinetrks[0].highlightTrack=(new google.maps.Polyline({
-                      path: pointarray[0],
-                      strokeColor: 'rgb(64,64,64)',
-                      strokeWeight: 6,
-                      title: event.data.label,
-                    	map: trailmarkers[0].map
-                  }));
-	                infoWindows[0].open(map,trailmarkers[0]);
-                  google.maps.event.addListener(infoWindows[0], 'closeclick', function () {
-                    console.log('polyLine closeClick')
-	                  polylinetrks[0].highlightTrack.setMap(null);
-	                  polylinetrks[0].highlightTrack=null;
-                    infoWindows[0].setMap(null);
-                    trailmarkers[0].infoWindowOpen=false;
-                  });
-                }
-              });
-              map.panTo({lat: pntArryDict.meanlat/deg_rads, lng: pntArryDict.meanlon/deg_rads});
-
-            var msg={
-              "type":"addtrack",
-              "label":event.data.label,
-              "value":[pntArryDict.meanlat.toFixed(4),pntArryDict.meanlon.toFixed(4)]
-            };
-            window.parent.postMessage(msg , "*");
+              return doAddTrack(event);
             }
 
             // ************ADDREGIONTRACKS**************
@@ -396,10 +398,9 @@
               let meanlat=0; let meanlng=0;
               for (ii=0;ii<event.data.value.xml.length;ii++){
                 pntArryDict=parsePointArray(event.data.value.xml[ii]);
-                pointarray.push(pntArryDict.array);
-                console.log("addregiontracks found "+pointarray[ii].length+" points")
+                console.log("addregiontracks found "+pntArryDict.array.length+" points")
                 polylinetrks.push(new google.maps.Polyline({
-                    path: pointarray[ii],
+                    path: pntArryDict.array,
                     strokeColor: event.data.value.grmColor[ii],
                     strokeWeight: 3,
                     title: event.data.label[ii],
@@ -443,10 +444,11 @@
                     map: map,
                     title: event.data.label[ii],
                     label: {text:event.data.label[ii],color:event.data.value.grmColor[ii],fontSize:'14px',fontWeight:'bold'},
-                    icon: this_icon
+                    icon: this_icon,
+                    infoWindowOpen: false
                     // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
                 }));
-                attachMarkerMessage(trailmarkers[ii], contentString);
+                attachMarkerMessage(trailmarkers[ii], polylinetrks[ii], infoWindows[ii]);
             	}
               map.panTo({lat: meanlat/trailmarkers.length, lng: meanlng/trailmarkers.length});
             } // end addregiontracks
