@@ -258,7 +258,7 @@
             poly.highlightTrack=(new google.maps.Polyline({
                 path: poly.getPath(),
                 strokeColor: 'rgb(64,64,64)',
-                strokeWeight: 6,
+                strokeWeight: 5,
                 title: poly.title,
                 map: trlmrkr.map
             }));
@@ -279,7 +279,7 @@
             poly.highlightTrack=(new google.maps.Polyline({
                 path: poly.getPath(),
                 strokeColor: 'rgb(64,64,64)',
-                strokeWeight: 6,
+                strokeWeight: 5,
                 title: poly.title,
                 map: trlmrkr.map
             }));
@@ -306,7 +306,7 @@
         });
       }
       
-      // Perfomr the addtrack event
+      // Perform the addtrack event
       function doAddTrack(event){
         let ct = 0;
         clearMapData();
@@ -320,9 +320,16 @@
             highlightTrack: null
         }));
         polylinetrks[0].setMap(map);
-  
+  			let title = event.data.label;
+        if (event.data.value.trType==="ski"){
+          console.log("doAddTrack found Classic "+event.data.value.classicSet)
+          if (event.data.value.classicSet===undefined)
+          	title=title.concat(" Classic Set: No")
+           else
+          	title=title.concat(" Classic: "+event.data.value.classicSet)
+        }
         contentString = '<div id="content">'+
-            '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label+'</b><br><br>Trail Length: ';
+            '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+title+'</b><br>Trail Length: ';
             contentString=contentString.concat(pntArryDict.trailLgth.toFixed(2).toString());
             contentString=contentString.concat(' miles (');
             contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
@@ -398,7 +405,6 @@
               let meanlat=0; let meanlng=0;
               for (ii=0;ii<event.data.value.xml.length;ii++){
                 pntArryDict=parsePointArray(event.data.value.xml[ii]);
-                console.log("addregiontracks found "+pntArryDict.array.length+" points")
                 polylinetrks.push(new google.maps.Polyline({
                     path: pntArryDict.array,
                     strokeColor: event.data.value.grmColor[ii],
@@ -406,8 +412,16 @@
                     title: event.data.label[ii],
                 }));
                 polylinetrks[ii].setMap(map);
+                let title = event.data.label[ii];
+                if (event.data.value.trType==="ski"){
+                  console.log("addregiontracks found classic set "+event.data.value.classicSet[ii]);
+                  if (event.data.value.classicSet[ii]===undefined)
+                    title=title.concat(" Classic: No")
+                   else
+	                  title=title.concat(" Classic Set: "+event.data.value.classicSet[ii]);
+                }
                 contentString = '<div id="content">'+
-                    '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+event.data.label[ii]+'</b><br><br>Trail Length: ';
+                    '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+title+'</b><br>Trail Length: ';
                     contentString=contentString.concat(pntArryDict.trailLgth.toFixed(2).toString());
                     contentString=contentString.concat(' miles (');
                     contentString=contentString.concat((1.609344*pntArryDict.trailLgth).toFixed(2).toString());
@@ -426,7 +440,7 @@
                 infoWindows.push(new google.maps.InfoWindow({
                       content: contentString
                   }));
-                console.log("addregiontracks for ii="+ii+", infoWindow: "+contentString+"; length is "+infoWindows.length);
+                // console.log("addregiontracks for ii="+ii+", infoWindow: "+contentString+"; length is "+infoWindows.length);
                 meanlat+=pntArryDict.meanlat/deg_rads; meanlng+=pntArryDict.meanlon/deg_rads;
                 const this_icon = {
                   path:

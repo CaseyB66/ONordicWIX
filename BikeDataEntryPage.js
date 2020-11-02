@@ -177,7 +177,7 @@ export function groomersDrpDn_change(event) {
 	}
 	console.log('groomerDrpDn value '+$w('#groomersDrpDn').value + ' pwd '+chkPwd)
 	$w('#groomerPwdEdit').enable();
-
+	$w("#groomerPwdEdit").inputType = "password";
 }
 
 async function fillTrailsDoneTbl(){

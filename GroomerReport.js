@@ -36,7 +36,6 @@ export class groomReportTable {
 		this.dateColorDefn = [{hrs:16,color:colorGreen},
 			{hrs:24,color:colorYellow},
 			{hrs:24*365,color:colorRed}];
-		console.log('groomReportTable defined dateColorDefn: '+this.dateColorDefn[0].hrs)
 	}
 
 	setSmallTable(bval){
@@ -168,19 +167,21 @@ export class groomReportTable {
 	}
 
 	getDateColorByHours(hrs){
+		let rtrn = {color:this.dateColorDefn[this.dateColorDefn.length-1].color,
+			valid:false};
 		let ii=0;
-		let rtrn=this.dateColorDefn[this.dateColorDefn.length-1].color;
 		try {
 			for (ii=0;ii<this.dateColorDefn.length;ii++){
 				if (hrs<this.dateColorDefn[ii].hrs){
-					rtrn = this.dateColorDefn[ii].color;
+					rtrn.color = this.dateColorDefn[ii].color;
+					if (ii<this.dateColorDefn.length-1)
+						rtrn.valid=true;
 					break;
 				}
 			}
 		} catch (err){
 			console.log('getDateColorByHours caught err '+err);
 		}
-		console.log('getDateColorByHours found color for hrs = '+hrs+' = '+rtrn);
 		return rtrn;
 	}
 
@@ -304,13 +305,12 @@ export class groomReportTable {
 				if (((this.reportType === 0) && (srtRws[i]["priority"] === 1) && (thisTrail !== srtRws[i]["trailName"])) ||
 					(this.reportType === 2) ||
 					((this.reportType === 1) && (thisTrail !== srtRws[i]["trailName"]))) {
-					var rowClr='background-color:'+this.getDateColor(srtRws[i]["fullDate"])
-					console.log('buildGrmRptTable found rowClr '+rowClr);
-					rwHtml = rwHtml.concat('<tr style="' + rowClr + ';border: 1px solid black;border-collapse: collapse;">')
+					var rowClr=this.getDateColor(srtRws[i]["fullDate"]);
+					rwHtml = rwHtml.concat('<tr style="background-color:' + rowClr.color + ';border: 1px solid black;border-collapse: collapse;">')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailName"] + '</td>')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomTime"] + '</td>')
 					if (trType==='ski'){
-						if (srtRws[i]["classicSet"]===true)
+						if ((srtRws[i]["classicSet"]===true) && (rowClr.valid===true))
 							rwHtml = rwHtml.concat('<td style="border: thin solid black">' + "Yes" + '</td>')
 						else
 							rwHtml = rwHtml.concat('<td style="border: thin solid black">' + "No" + '</td>')

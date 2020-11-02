@@ -84,10 +84,11 @@ export function sendTrack(){
     const xml = _currTrailList[$w('#trailNameDrpDn').selectedIndex].gpxText;
     var today = new Date();
     var time_ms = today.getTime();
-    var bkgClr = "";
+    var bkgClr = {};
     let trkDate="";
     let skiDffclt={color:"",descr:""};
     let tdiff = 0;
+    let clsc="No";
     const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
     console.log("sendTrack found groomtable data lgth "+_groomTableData.length+"; or trail "+name);
     for (var i=0;i<_groomTableData.length;i++){
@@ -98,22 +99,25 @@ export function sendTrack(){
             trkDate=_groomTableData[i].groomTime;
             bkgClr=_grmRpt.getDateColor(_groomTableData[i].fullDate)
             skiDffclt=_grmRpt.getSkiDifficultyObject(_groomTableData[i]['skiDifficulty']);
+            if ((_groomTableData[i].classicSet===true) && (bkgClr.valid===true)){
+                clsc="Yes";
+            }
             break;
         }
     }
-    console.log("sendTrack: xml length "+xml.length)
     var kys=Object.keys(xml);
     // var parser = new DOMParser();
     // var xmlDoc = parser.parseFromString(xml,"text/xml");
-    console.log("sendTrack: bkg "+bkgClr+"; trkDate "+trkDate)
     let trkColor=getTrailColor(Math.floor(Math.random() * 100))
     var msg={
         type:"addtrack",
         label:_currTrailName,
         value:{xml:xml,trkColor:trkColor,
-        grmColor:bkgClr,grmDate:trkDate,
-        skiDifficulty:skiDffclt,trType:trType}
+        grmColor:bkgClr.color,grmDate:trkDate,
+        skiDifficulty:skiDffclt,trType:trType,
+        classicSet: clsc}
         }
+    console.log("sendTrack: xml length "+msg.value.xml.length+"; bkg "+msg.value.grmColor+"; trkDate "+msg.value.grmDate+"; classic "+msg.value.classicSet)
     $w("#googleMapHTML").postMessage(msg);        
 }
 
@@ -131,6 +135,7 @@ export function sendRegionTracks(){
     let trkClrLst = [];
     let grmDateLst = [];
     let grmClrLst = [];
+    let clscLst = [];
     let skiDffcltLst = [];
     let ii=0; let jj = 0;
     const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
@@ -143,13 +148,19 @@ export function sendRegionTracks(){
         xmlLst.push(_currTrailList[ii].gpxText);
         trkClrLst.push(getTrailColor(ii));
         grmDataFnd = false;
+        let clsc = "No"
+        let bkgClr={};
         for (jj=0;jj<_groomTableData.length;jj++){
             if (_groomTableData[jj].trailName.toLowerCase()===_currTrailList[ii].title.toLowerCase()){
-                console.log("sendRegionTracks testing "+_groomTableData[jj].trailName+" against "+_currTrailList[ii].title)
                 tdiff = time_ms - _groomTableData[jj].fullDate.getTime();
                 grmDateLst.push(_groomTableData[jj].groomTime);
-                grmClrLst.push(_grmRpt.getDateColor(_groomTableData[jj].fullDate))
+                bkgClr = _grmRpt.getDateColor(_groomTableData[jj].fullDate);
+                grmClrLst.push(bkgClr.color)
                 skiDffcltLst.push(_grmRpt.getSkiDifficultyObject(_groomTableData[jj]['skiDifficulty']));
+                if ((_groomTableData[jj].classicSet===true) && (bkgClr.valid===true)){
+                    clsc = "Yes";
+                }
+                clscLst.push(clsc);
                 grmDataFnd = true;
                 break;
             }
@@ -158,8 +169,9 @@ export function sendRegionTracks(){
             {
                 console.log("sendRegionTracks failed to match "+_currTrailList[ii].title)
                 grmDateLst.push(_grmRpt.getTimeString(errDate));
-                grmClrLst.push(_grmRpt.getDateColor(errDate))
+                grmClrLst.push(_grmRpt.getDateColor(errDate).color)
                 skiDffcltLst.push({color:"background-color:rgb(200,0,0)",descr:"UNK"});
+                clscLst.push(clsc);
             }
     }
     console.log("sendRegionTracks found "+xmlLst.length+" tracks; isArray "+Array.isArray(xmlLst))
@@ -168,7 +180,8 @@ export function sendRegionTracks(){
         label:trailNamesLst,
         value:{xml:xmlLst,trkColor:trkClrLst,
         grmColor:grmClrLst,grmDate:grmDateLst,
-        skiDifficulty:skiDffcltLst,trType:trType}
+        skiDifficulty:skiDffcltLst,trType:trType,
+        classicSet: clscLst}
         }
     $w("#googleMapHTML").postMessage(msg);        
 }
@@ -184,9 +197,7 @@ async function fillTrailRgnDrpDn() {
             .ascending("viewSort")
             .find();
             const rgnsMap = results.items.map(item => item.trailRegion);
-            console.log("fillTrailRgnDrpDn: "+rgnsMap.length+"; type "+typeof(rgnsMap) )
             const rgns = [...new Set(rgnsMap)];
-            console.log("fillTrailRgnDrpDn: "+rgns.length+"; type "+typeof(rgns) )
             let rgnsOpts = rgns.map(curr => {
                 return {label:curr, value:curr};})
             console.log("fillTrailRgnDrpDn: "+rgnsOpts.length+"; type "+typeof(rgnsOpts) )
