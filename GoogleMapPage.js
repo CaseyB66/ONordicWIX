@@ -17,7 +17,7 @@ $w.onReady(function () {
     htmlText=htmlText.concat('<br>Pick All at the top of either list to view all</div>');
     $w('#mapInstructionText').html=htmlText;
 
-    _grmRpt = new groomReportTable("All", 720, 1);
+    _grmRpt = new groomReportTable("All", 64800, 1);
     const clrDefn=_grmRpt.getDateColorDefn();
     htmlText = '<div style="background-color:rgb(200,200,200);font-size:12px;text-align:center">';
     htmlText=htmlText.concat('Trail Colors indicate recent grooming');
@@ -51,7 +51,7 @@ $w.onReady(function () {
 
 async function queryGroomReportTable(){
     // get a month's worth of grooming data...
-    _grmRpt = new groomReportTable("All", 720, 1);
+    _grmRpt = new groomReportTable("All", 64800, 1);
 	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
 
     let newRws = await _grmRpt._skiGroomingTableQuery(trType);
