@@ -74,12 +74,30 @@ $w.onReady(function () {
 	$w('#trailCondxTbl').rows = []
 	$w('#trailsDoneTbl').rows = []
 	var today = new Date();
-	var time_ms = today.getTime();
+
+	$w('#trailGroomDate').value = today;
+	let timestr="";
+	if (today.getHours()<10){
+		timestr="0"+today.getHours();
+	}
+	else {
+		timestr = today.getHours();
+	}
+	if (today.getMinutes()<10){
+		timestr +=":0"+today.getMinutes();
+	}
+	else {
+		timestr += ":"+today.getMinutes();
+	}
+	$w('#trailGroomTime').value = timestr;
+
 	// today.setTime(time_ms+24*3600*1000);
-	let badDates = [today];
+	var lpday = new Date();
+	var time_ms = lpday.getTime();
+	let badDates = [lpday];
 	for (var i = 1; i < 30; i++) {
-		today.setTime(time_ms + i * 24 * 3600 * 1000);
-		badDates.push(new Date(today.getTime()));
+		lpday.setTime(time_ms + i * 24 * 3600 * 1000);
+		badDates.push(new Date(lpday.getTime()));
 	}
 	$w("#trailGroomDate").disabledDates = badDates;
 
