@@ -101,16 +101,25 @@ export class groomReportTable {
 					if (trType==="ski")
 						machtxt = "Cat";
 					else
-						machtxt = "Tires"
-				}
-				if (trlDnItems[j]["groomMachine"] === '3') {
-					machtxt = "Cat&Sled"
+						machtxt = "SnwMob"
 				}
 				if (trlDnItems[j]["groomMachine"] === '2') {
 					if (trType==="ski")
 						machtxt = "Sled";
 					else
+						machtxt = "Tires"
+				}
+				if (trlDnItems[j]["groomMachine"] === '3') {
+					if (trType==="ski")
+						machtxt = "Cat&Sled";
+					else
 						machtxt = "Drag"
+				}
+				if (trlDnItems[j]["groomMachine"] === '4') {
+					if (trType==="ski")
+						machtxt = "N/A";
+					else
+						machtxt = "Tires&Drag"
 				}
 				timStr = this.getTimeString(trlDnItems[j]["groomDate"]);
 				newRws.push({
@@ -189,6 +198,36 @@ export class groomReportTable {
 		return this.dateColorDefn;
 	}
 
+	async _skiGroomCommentHTML(trType){
+		var cmnthtml="";
+		var dateStrOpts = {
+			month: 'short',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit'
+		};
+
+		try {
+			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
+			if ((tblCmnt.length > 0) && (tblCmnt[0]["groomDate"] > this.fltrDate)) {
+				let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
+				console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
+
+				cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+				border-radius: 8px;padding: 10px;font-size:16px">';
+				cmnthtml = cmnthtml.concat(timStr + ": ");
+				cmnthtml = cmnthtml.concat(tblCmnt[0]["title"])
+				cmnthtml = cmnthtml.concat("</p>")
+			} else {
+				cmnthtml = ""
+			}
+
+		} catch (err) {
+			console.log("_skiGroomCommentHTML caught error getting general comment" + err)
+		}
+		return cmnthtml;
+	}
+
 	async _skiGroomCommentTableQuery(trType) {
 		try {
 			const results = await wixData.query("skiGroomCommentTable")
@@ -199,7 +238,7 @@ export class groomReportTable {
 				.find();
 			var cmntItems = results.items;
 
-			var sortCmnt = cmntItems.sort(function (a, b) {
+			var tblCmnt = cmntItems.sort(function (a, b) {
 				var dateA = a.groomDate;
 				var dateB = b.groomDate;
 				if (dateA < dateB) {
@@ -212,8 +251,9 @@ export class groomReportTable {
 			});
 		} catch (err) {
 			console.log("fillgrmRptTable caught error getting general comment" + err)
+			throw err;
 		}
-		return sortCmnt;
+		return tblCmnt;
 	}
 
 	buildGrmRptTable(trType,srtRws) {

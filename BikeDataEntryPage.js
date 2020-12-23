@@ -2,7 +2,7 @@ import wixData from 'wix-data';
 import wixSearch from 'wix-search';
 
 const __nrEntryRows = 12;
-const __fstEntryRow = 5;
+const __fstEntryRow = 4;
 
 var getKeys = function(obj){
    var keys = [];
@@ -66,7 +66,22 @@ function _getElmntsChng(thekey){
 }
 
 $w.onReady(function () {
-	// TODO: write your page related code here...
+	var grmrRd;
+	for (var i = __fstEntryRow-1; i < __nrEntryRows; i++)
+	{
+		$w('#groomMachRadioALL').options=[{"label":"None","value":"0"},
+			{"label":"SM","value":"1"},
+			{"label":"Tires","value":"2"},
+			{"label":"Drag","value":"3"},
+			{"label":"Both","value":"4"}];
+		grmrRd=('#grmMachRadio'+(i+1))
+		$w(grmrRd).options=[{"label":"None","value":"0"},
+			{"label":"SM","value":"1"},
+			{"label":"Tires","value":"2"},
+			{"label":"Drag","value":"3"},
+			{"label":"Both","value":"4"}];
+	}
+
 	fillTrailRgnDrpDn();
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
@@ -260,7 +275,7 @@ export function groomerPwdEdit_change(event) {
 	}
 	console.log('groomerPwdEdit value '+$w('#groomersDrpDn').value + ' pwd '+chkPwd)
 	if ($w('#groomerPwdEdit').value===chkPwd){
-		$w('#trailRgnDrpDn').enable();
+		$w('#trailRgnDrpDn').disable();
 		$w('#groomerPwdEdit').hide();
 
 		fillTrailsDoneTbl();
@@ -310,10 +325,12 @@ function fillTrailRgnDrpDn(){
 	.then(results =>{
 		const rgns = getUniqueTrailRegions(results.items);
 		let rgnsOpts=buildOptions(rgns);
+		rgnsOpts.push({ label: "All", value: "All" })
 		$w('#trailRgnDrpDn').options = rgnsOpts;
+		$w('#trailRgnDrpDn').selectedIndex = rgnsOpts.length - 1;
 		var ndx=-1;
 		for (var i=0;i<rgnsOpts.length;i++){
-			if (rgnsOpts[i].label==="South"){
+			if (rgnsOpts[i].label==="All"){
 				ndx=i;
 				break;
 			}
@@ -392,7 +409,7 @@ async function fillTrailNameDrpDn(rgn) {
 	// console.log("fillTrailNameDrpDn for region"+rgn+trllst)
 	hideTrailLabels();
 	for (var i=0;i<_trailList.length;i++){
-		setTrailLabel(_trailList[i].title, i+5)
+		setTrailLabel(_trailList[i].title, i+__fstEntryRow)
 		// console.log("trailNameDrpDn trail item = " + + " currTrail "+_currTrailName)
 	}
 
@@ -559,6 +576,8 @@ export async function submitBtn_click(event) {
 		dateStyle: "medium"
 	});
 
+	$w('#submitBtn').disable();
+	
 	_saveTime = $w('#trailGroomTime').value;
 	let toInsert = {}
 	let grpStr=""

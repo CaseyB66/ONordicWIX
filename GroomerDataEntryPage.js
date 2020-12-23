@@ -570,6 +570,7 @@ export async function submitBtn_click(event) {
 		dateStyle: "medium"
 	});
 
+	$w('#submitBtn').disable();
 	_saveTime = $w('#trailGroomTime').value;
 	let toInsert = {}
 	let grpStr=""

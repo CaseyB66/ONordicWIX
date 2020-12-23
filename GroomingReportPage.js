@@ -102,21 +102,15 @@ async function fillGrmRptTbl() {
 	if (tblhtml.length>1)
 		$w('#grmRptTable').html = tblhtml;
 
-	var sortCmnt = await grmRptClass._skiGroomCommentTableQuery(trType);
-
-	if ((sortCmnt.length > 0) && (sortCmnt[0]["groomDate"] > grmRptClass.fltrDate)) {
-		timStr = sortCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
-		let cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
-		border-radius: 8px;padding: 10px;font-size:16px">';
-		cmnthtml = cmnthtml.concat(timStr + ": ");
-		cmnthtml = cmnthtml.concat(sortCmnt[0]["title"])
-		cmnthtml = cmnthtml.concat("</p>")
+	let cmnthtml= await grmRptClass._skiGroomCommentHTML(trType);
+	if (cmnthtml.length>1){
 		$w('#genCmntText').html = cmnthtml;
 		$w('#genCmntText').show();
 	} else {
 		$w('#genCmntText').html = "";
 		$w('#genCmntText').hide();
 	}
+
 }
 
 export function grmRptHours_change(event) {
