@@ -1,6 +1,7 @@
 // For full API documentation, including code examples, visit https://wix.to/94BuAAs
 import wixData from 'wix-data';
 import wixSearch from 'wix-search';
+import wixWindow from 'wix-window';
 
 const __nrEntryRows = 12;
 
@@ -70,6 +71,7 @@ $w.onReady(function () {
 	fillTrailRgnDrpDn();
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
+	$w('#genCmntEdit').maxLength=192;
 	$w('#removeTrailCondxBtn').disable();
 	$w('#trailCondxTbl').rows = []
 	$w('#trailsDoneTbl').rows = []
@@ -606,6 +608,7 @@ export async function submitBtn_click(event) {
 			};
 			let newItmRef = "";
 			try {
+				console.log("submitBtn_click calling insert, render env = "+wixWindow.rendering.env)
 				let results = await wixData.insert("skiGroomingTable", toInsert);
 				if (results !== undefined) {
 					_saveTime = $w('#trailGroomTime').value;

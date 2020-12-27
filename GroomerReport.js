@@ -223,9 +223,14 @@ export class groomReportTable {
 			    (this.lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime() < 60000)) {
 				let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 				console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
-
-				cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
-				border-radius: 8px;padding: 10px;font-size:16px">';
+				let cmntlgth = tblCmnt[0]["title"].length;
+				if (cmntlgth<108){
+					cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+					border-radius: 8px;padding: 10px;font-size:16px">';
+				} else {
+					cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+					border-radius: 8px;padding: 10px;font-size:12px">';
+				}
 				cmnthtml = cmnthtml.concat(timStr + ": ");
 				cmnthtml = cmnthtml.concat(tblCmnt[0]["title"])
 				cmnthtml = cmnthtml.concat("</p>")
