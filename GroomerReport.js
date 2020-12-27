@@ -25,7 +25,7 @@ export class groomReportTable {
 		this.hours = Number(hrs);
 		this.region = rgn;
 		let tdy = new Date();
-		this.reprtDate = tdy.toDateString();
+		this.lstRprtDate = new Date();
 		this.reportType = rprtTyp;
 		this._winWid = 0;
 		this._winHt = 0;
@@ -76,26 +76,34 @@ export class groomReportTable {
 			trlDnItems = results.items;
 			if (undefined === trlDnItems){
 				console.log("_skiGroomingTableQuery found NO results!")
+				this.lstRprtDate=new Date();
 				return [];
 			}
 			else
 				console.log("_skiGroomingTableQuery retured " + trlDnItems.length)
 		} catch (err) {
+			this.lstRprtDate=new Date();
 			console.log("_skiGroomingTableQuery caught error " + err)
 			return [];
 		}
 		if ((trlDnItems === undefined) || (trlDnItems.length < 1)) {
+			this.lstRprtDate=new Date();
 			console.log("_skiGroomingTableQuery exiting with no results from query")
 			return [];
 		}
 		let timStr = ""
 		let newRws = []
+		this.lstRprtDate.setTime(100);
+		
 		for (var j = 0; j < trlDnItems.length; j++) {
 			if (trlDnItems[j] === undefined)
 				continue;
 			if ( trlDnItems[j]["trailRef"]["reportPriority"]<0)
 				continue;
-			if ((trlDnItems[j]["trailRef"]["trailType"]===trType) && ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"]))) {
+			if ((trlDnItems[j]["trailRef"]["trailType"]===trType) && 
+			    ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"]))) {
+			  if (trlDnItems[j]["groomDate"].getTime()>this.lstRprtDate.getTime())
+			    this.lstRprtDate.setTime(trlDnItems[j]["groomDate"].getTime());
 				let machtxt = "None";
 				if (trlDnItems[j]["groomMachine"] === '1') {
 					if (trType==="ski")
@@ -139,7 +147,9 @@ export class groomReportTable {
 				})
 			}
 		}
-        return newRws;
+		if (newRws.length<1)
+		  this.lstRprtDate = new Date();
+    return newRws;
 	}
 
 	getSkiDifficultyObject(dffclty){
@@ -209,7 +219,8 @@ export class groomReportTable {
 
 		try {
 			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
-			if ((tblCmnt.length > 0) && (tblCmnt[0]["groomDate"] > this.fltrDate)) {
+			if ((tblCmnt.length > 0) && 
+			    (this.lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime() < 60000)) {
 				let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 				console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
 
@@ -291,7 +302,7 @@ export class groomReportTable {
 			<th style="text-align: left;border: 1px solid black;">Trail Name</th> \
 			<th style="text-align: left;border: 1px solid black;">Time last Groom</th>;');
 			if (trType==='ski'){
-				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">ClscSet</th>');
+				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Clsc Reset</th>');
 			}
 			tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Mach</th> \
 			<th style="text-align: left;border: 1px solid black;">Condition</th> \
@@ -312,7 +323,7 @@ export class groomReportTable {
 			<th style="text-align: left">Trail Name</th> \
 			<th style="text-align: left">Time last Groom</th>');
 			if (trType==='ski'){
-				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">ClscSet</th>');
+				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Clsc Reset</th>');
 			}
 			tblsrc = tblsrc.concat('</tr>');
 			}
