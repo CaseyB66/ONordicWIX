@@ -14,7 +14,7 @@
       }
       #map {
         border-style: solid; 
-        height: 550px;	
+        height: 550px;  
         width: 100%;
         position: absolute;
         right: 0px;
@@ -34,7 +34,7 @@
       }
       #map {
         border-style: solid; 
-        height: 600px;	
+        height: 600px;  
         width: 100%;
         position: absolute;
         right: 0px;
@@ -55,7 +55,7 @@
       }
       #map {
         border-style: solid; 
-        height: 400px;	
+        height: 400px;  
         width: 100%;
         position: absolute;
         right: 0px;
@@ -76,7 +76,7 @@
       }
       #map {
         border-style: solid; 
-        height: 300px;	
+        height: 300px;  
         width: 100%;
         position: absolute;
         right: 0px;
@@ -89,7 +89,7 @@
         padding: 0;
       }
     }
-  	</style>
+    </style>
   </head>
   <body onload="ready()"> 
     <script async="" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
@@ -320,13 +320,13 @@
             highlightTrack: null
         }));
         polylinetrks[0].setMap(map);
-  			let title = event.data.label;
+        let title = event.data.label;
         if (event.data.value.trType==="ski"){
           console.log("doAddTrack found Classic "+event.data.value.classicSet)
           if (event.data.value.classicSet===undefined)
-          	title=title.concat(" Classic Set: No")
+            title=title.concat(" Clsc ReSet: No")
            else
-          	title=title.concat(" Classic: "+event.data.value.classicSet)
+            title=title.concat(" Clsc ReSet: "+event.data.value.classicSet)
         }
         contentString = '<div id="content">'+
             '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+title+'</b><br>Trail Length: ';
@@ -416,9 +416,9 @@
                 if (event.data.value.trType==="ski"){
                   console.log("addregiontracks found classic set "+event.data.value.classicSet[ii]);
                   if (event.data.value.classicSet[ii]===undefined)
-                    title=title.concat(" Classic: No")
+                    title=title.concat(" Clsc ReSet: No")
                    else
-	                  title=title.concat(" Classic Set: "+event.data.value.classicSet[ii]);
+                    title=title.concat(" Clsc ReSet: "+event.data.value.classicSet[ii]);
                 }
                 contentString = '<div id="content">'+
                     '<div id="bodyContent" class="bodyContent" style="line-height:100%;"><b>'+title+'</b><br>Trail Length: ';
@@ -463,7 +463,7 @@
                     // icon: {path:google.maps.SymbolPath.CIRCLE, fillColor:event.data.value.trkColor}
                 }));
                 attachMarkerMessage(trailmarkers[ii], polylinetrks[ii], infoWindows[ii]);
-            	}
+              }
               map.panTo({lat: meanlat/trailmarkers.length, lng: meanlng/trailmarkers.length});
             } // end addregiontracks
 
