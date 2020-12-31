@@ -84,13 +84,15 @@ export function sendTrack(){
     const xml = _currTrailList[$w('#trailNameDrpDn').selectedIndex].gpxText;
     var today = new Date();
     var time_ms = today.getTime();
-    var bkgClr = {};
-    let trkDate="";
+    var errDate =  new Date(); errDate.setTime(0);
+    var bkgClr = _grmRpt.getDateColor(errDate);
+    let trkDate=_grmRpt.getTimeString(errDate);
     let skiDffclt={color:"",descr:""};
+    skiDffclt=_grmRpt.getSkiDifficultyObject(_currTrailList[$w('#trailNameDrpDn').selectedIndex].skiDifficulty);
     let tdiff = 0;
     let clsc="No";
     const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
-    console.log("sendTrack found groomtable data lgth "+_groomTableData.length+"; or trail "+name);
+    console.log("sendTrack found groomtable data lgth "+_groomTableData.length+"; curr trail "+name);
     for (var i=0;i<_groomTableData.length;i++){
         // console.log("sendTrack for iteration "+i+"; found trail "+_groomTableData[i].trailName.toLowerCase());
         if (_groomTableData[i].trailName.toLowerCase()===name.toLowerCase()){
@@ -98,7 +100,6 @@ export function sendTrack(){
             tdiff = time_ms - _groomTableData[i].fullDate.getTime();
             trkDate=_groomTableData[i].groomTime;
             bkgClr=_grmRpt.getDateColor(_groomTableData[i].fullDate)
-            skiDffclt=_grmRpt.getSkiDifficultyObject(_groomTableData[i]['skiDifficulty']);
             if ((_groomTableData[i].classicSet===true) && (bkgClr.valid===true)){
                 clsc="Yes";
             }
@@ -108,7 +109,7 @@ export function sendTrack(){
     var kys=Object.keys(xml);
     // var parser = new DOMParser();
     // var xmlDoc = parser.parseFromString(xml,"text/xml");
-    let trkColor=getTrailColor(Math.floor(Math.random() * 100))
+    let trkColor=getTrailColor($w('#trailNameDrpDn').selectedIndex)
     var msg={
         type:"addtrack",
         label:_currTrailName,
@@ -150,13 +151,15 @@ export function sendRegionTracks(){
         grmDataFnd = false;
         let clsc = "No"
         let bkgClr={};
+        let dffcltObj=_grmRpt.getSkiDifficultyObject(_currTrailList[ii].skiDifficulty);
+        skiDffcltLst.push(dffcltObj);
+        console.log("sendRegionTracks "+_currTrailList[ii].title + " SkiDffclt " + _currTrailList[ii].skiDifficulty + "; " + dffcltObj.descr)
         for (jj=0;jj<_groomTableData.length;jj++){
             if (_groomTableData[jj].trailName.toLowerCase()===_currTrailList[ii].title.toLowerCase()){
                 tdiff = time_ms - _groomTableData[jj].fullDate.getTime();
                 grmDateLst.push(_groomTableData[jj].groomTime);
                 bkgClr = _grmRpt.getDateColor(_groomTableData[jj].fullDate);
                 grmClrLst.push(bkgClr.color)
-                skiDffcltLst.push(_grmRpt.getSkiDifficultyObject(_groomTableData[jj]['skiDifficulty']));
                 if ((_groomTableData[jj].classicSet===true) && (bkgClr.valid===true)){
                     clsc = "Yes";
                 }
@@ -170,7 +173,6 @@ export function sendRegionTracks(){
                 console.log("sendRegionTracks failed to match "+_currTrailList[ii].title)
                 grmDateLst.push(_grmRpt.getTimeString(errDate));
                 grmClrLst.push(_grmRpt.getDateColor(errDate).color)
-                skiDffcltLst.push({color:"background-color:rgb(200,0,0)",descr:"UNK"});
                 clscLst.push(clsc);
             }
     }
@@ -254,10 +256,12 @@ async function fillTrailNameDrpDn(rgn){
 	}
     let ctlLgth=fndTrailList.length;
     _currTrailList=fndTrailList.filter(function(elmnt){return (elmnt.gpxText!==undefined);})
+    // console.log("fillTrailNameDrpDn found " + Object.getOwnPropertyNames(_currTrailList[1]))
+
     _currTrailList.unshift({title:"All",gpxText:""});
     console.log("fillTrailNameDrpDn reduced trailList from "+ctlLgth+" to "+_currTrailList.length)
 
-    const titlesOnly = _currTrailList.map(item => item.title);   
+    const titlesOnly = _currTrailList.map(item => item.title);
     // Return an array with a list of unique titles
     const uniqueTitles = [...new Set(titlesOnly)];
     nameOpts = uniqueTitles.map(curr => {

@@ -19,48 +19,75 @@ const colorGreen = "rgb(0,250,154)";
 const colorRed = "rgb(250,80,72)";
 const colorYellow = "rgb(238,232,170)";
 
-export class groomReportTable {
+export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 	// rprtType can be 0 for "Brief", 1 for "All Trails", 3 for "Full"
-	constructor(rgn = "South", hrs = 24, rprtTyp = 0) {
-		this.hours = Number(hrs);
-		this.region = rgn;
-		let tdy = new Date();
-		this.lstRprtDate = new Date();
-		this.reportType = rprtTyp;
-		this._winWid = 0;
-		this._winHt = 0;
-		var today = new Date();
-		var time_ms = today.getTime();
-		this.fltrDate = new Date(time_ms - this.hours * 60 * 60000);
-		this.bSmallTable = false;
-		this.dateColorDefn = [{hrs:16,color:colorGreen},
-			{hrs:24,color:colorYellow},
-			{hrs:24*365,color:colorRed}];
+
+	let hours = Number(hrs);
+	let region = rgn;
+	let tdy = new Date();
+	let lstRprtDate = new Date();
+	let reportType = rprtTyp;
+	let _winWid = 0;
+	let _winHt = 0;
+	var today = new Date();
+	var time_ms = today.getTime();
+	let fltrDate = new Date(time_ms - hours * 60 * 60000);
+	let bSmallTable = false;
+	let dateColorDefn = [{hrs:16,color:colorGreen},
+		{hrs:24,color:colorYellow},
+		{hrs:24*365,color:colorRed}];
+
+	this.setSmallTable = (bval) => {
+		bSmallTable = bval;
 	}
 
-	setSmallTable(bval){
-		this.bSmallTable = bval;
-	}
-
-	async _getWinInfo() {
+	this._getWinInfo =  async () => {
 		let wininfo = await wixWindow.getBoundingRect();
-		this._winHt = wininfo.window.height;
-		this._winWid = wininfo.window.width;
+		_winHt = wininfo.window.height;
+		_winWid = wininfo.window.width;
 	}
 
-	getTimeString(thedate){
+	this.getTimeString = (thedate) => {
 		var dateStrOpts = {
 			month: 'short',
 			day: '2-digit',
 			hour: '2-digit',
 			minute: '2-digit'
 		};
-		return thedate.toLocaleDateString("en-US", dateStrOpts);
+		if (thedate.getFullYear()<2018){
+			return "N/A"
+		} else {
+			return thedate.toLocaleDateString("en-US", dateStrOpts);
+		}
 	}
 
-	async _skiGroomingTableQuery(trType) {
+	this.insertSkiGroomerData = async (toInsert) => {
+		var rtrn = {groomDataRef:"", trailRef:"", groomerRef:"",trailName:"",groomDate:null}
+			let newItmRef = "";
+			try {
+				console.log("submitBtn_click calling insert, render env = "+wixWindow.rendering.env)
+				let results = await wixData.insert("skiGroomingTable", toInsert);
+				if (results !== undefined) {
+					let item = results;
+					console.log("insertSkiGroomerData: for "+toInsert.trailName+"; result " + results)
+					rtrn.groomDataRef = item._id;
+					rtrn.trailName = toInsert.trailName;
+					rtrn.trailRef = toInsert.trailRef;
+					rtrn.groomerRef =  toInsert.groomerRef;
+					rtrn.groomDate = toInsert.groomDate;
+					// let tblrws = $w('#trailsDoneTbl').rows;
+					// tblrws.push(item);
+					// $w('#trailsDoneTbl').rows=tblrws;
+				}
+			} catch (err) {
+				console.log("submitBtn_click caught submit error " + err)
+			}
+		return rtrn;
+	}
+
+	this._skiGroomingTableQuery = async (trType) => {
 		let mchfltr = '1';
-		if (this.reportType === 2)
+		if (reportType === 2)
 			mchfltr = '0'
 
 		console.log("_skiGroomingTableQuery starting...")
@@ -70,30 +97,30 @@ export class groomReportTable {
 				.include("trailRef")
 				.include("groomerRef")
 				.limit(500)
-				.ge("groomDate", this.fltrDate)
+				.ge("groomDate", fltrDate)
 				.ge("groomMachine", mchfltr)
 				.find();
 			trlDnItems = results.items;
 			if (undefined === trlDnItems){
 				console.log("_skiGroomingTableQuery found NO results!")
-				this.lstRprtDate=new Date();
+				lstRprtDate=new Date();
 				return [];
 			}
 			else
 				console.log("_skiGroomingTableQuery retured " + trlDnItems.length)
 		} catch (err) {
-			this.lstRprtDate=new Date();
+			lstRprtDate=new Date();
 			console.log("_skiGroomingTableQuery caught error " + err)
 			return [];
 		}
 		if ((trlDnItems === undefined) || (trlDnItems.length < 1)) {
-			this.lstRprtDate=new Date();
+			lstRprtDate=new Date();
 			console.log("_skiGroomingTableQuery exiting with no results from query")
 			return [];
 		}
 		let timStr = ""
 		let newRws = []
-		this.lstRprtDate.setTime(100);
+		lstRprtDate.setTime(100);
 		
 		for (var j = 0; j < trlDnItems.length; j++) {
 			if (trlDnItems[j] === undefined)
@@ -101,9 +128,9 @@ export class groomReportTable {
 			if ( trlDnItems[j]["trailRef"]["reportPriority"]<0)
 				continue;
 			if ((trlDnItems[j]["trailRef"]["trailType"]===trType) && 
-			    ((this.region.toLowerCase() === "all") || (this.region === trlDnItems[j]["trailRef"]["trailRegion"]))) {
-			  if (trlDnItems[j]["groomDate"].getTime()>this.lstRprtDate.getTime())
-			    this.lstRprtDate.setTime(trlDnItems[j]["groomDate"].getTime());
+			    ((region.toLowerCase() === "all") || (region === trlDnItems[j]["trailRef"]["trailRegion"]))) {
+			  if (trlDnItems[j]["groomDate"].getTime()>lstRprtDate.getTime())
+			    lstRprtDate.setTime(trlDnItems[j]["groomDate"].getTime());
 				let machtxt = "None";
 				if (trlDnItems[j]["groomMachine"] === '1') {
 					if (trType==="ski")
@@ -148,11 +175,11 @@ export class groomReportTable {
 			}
 		}
 		if (newRws.length<1)
-		  this.lstRprtDate = new Date();
+		  lstRprtDate = new Date();
     return newRws;
 	}
 
-	getSkiDifficultyObject(dffclty){
+	this.getSkiDifficultyObject = async (dffclty) => {
 		let color4 = "rgb(250,0,0)";
 		let color5 = "rgb(200,0,0)";
 		let color1 = "rgb(0,250,0)";
@@ -178,22 +205,22 @@ export class groomReportTable {
 	return rtrn;
 	}
 
-	getDateColor(rowDate){
-		var today = new Date();
-		var time_ms = today.getTime();
-		var tdiff = time_ms - rowDate.getTime();
+	this.getDateColor = (rowDate) => {
+		var lcltoday = new Date();
+		var lcl_ms = lcltoday.getTime();
+		var tdiff = lcl_ms - rowDate.getTime();
 		return this.getDateColorByHours(tdiff/3600000);
 	}
 
-	getDateColorByHours(hrs){
-		let rtrn = {color:this.dateColorDefn[this.dateColorDefn.length-1].color,
+	this.getDateColorByHours = (gethrs) => {
+		let rtrn = {color:dateColorDefn[dateColorDefn.length-1].color,
 			valid:false};
 		let ii=0;
 		try {
-			for (ii=0;ii<this.dateColorDefn.length;ii++){
-				if (hrs<this.dateColorDefn[ii].hrs){
-					rtrn.color = this.dateColorDefn[ii].color;
-					if (ii<this.dateColorDefn.length-1)
+			for (ii=0;ii<dateColorDefn.length;ii++){
+				if (gethrs<dateColorDefn[ii].hrs){
+					rtrn.color = dateColorDefn[ii].color;
+					if (ii<dateColorDefn.length-1)
 						rtrn.valid=true;
 					break;
 				}
@@ -204,11 +231,11 @@ export class groomReportTable {
 		return rtrn;
 	}
 
-	getDateColorDefn() {
-		return this.dateColorDefn;
+	this.getDateColorDefn = () => {
+		return dateColorDefn;
 	}
 
-	async _skiGroomCommentHTML(trType){
+	this._skiGroomCommentHTML = async (trType) => {
 		var cmnthtml="";
 		var dateStrOpts = {
 			month: 'short',
@@ -220,7 +247,7 @@ export class groomReportTable {
 		try {
 			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
 			if ((tblCmnt.length > 0) && 
-			    (this.lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime() < 60000)) {
+			    (lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime() < 60000)) {
 				let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 				console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
 				let cmntlgth = tblCmnt[0]["title"].length;
@@ -244,13 +271,13 @@ export class groomReportTable {
 		return cmnthtml;
 	}
 
-	async _skiGroomCommentTableQuery(trType) {
+	this._skiGroomCommentTableQuery = async (trType) => {
 		try {
 			const results = await wixData.query("skiGroomCommentTable")
 				.include("groomerRef")
 				.limit(100)
 				.eq("trailType",trType)
-				.ge("groomDate", this.fltrDate)
+				.ge("groomDate", fltrDate)
 				.find();
 			var cmntItems = results.items;
 
@@ -272,19 +299,19 @@ export class groomReportTable {
 		return tblCmnt;
 	}
 
-	buildGrmRptTable(trType,srtRws) {
+	this.buildGrmRptTable = (trType,srtRws) => {
 		let thisTrail = "";
-		console.log("buildGrmRptTable this.reportType " + this.reportType);
+		console.log("buildGrmRptTable reportType " + reportType);
 
 		let lstRgn = "";
 		let fntszfull = "width:100%;font-size:12px";
 		let fntszsimple = "width:60%;font-size:16px";
-		if (this.bSmallTable){
+		if (bSmallTable){
 			fntszsimple = "width:100%;font-size:13px";
 		}
 		this._getWinInfo();
 		if (wixWindow.formFactor === "Mobile" || wixWindow.formFactor === "Tablet") {
-			if (this._winWid > this._winHt) {
+			if (_winWid > _winHt) {
 				fntszfull = "width:100%;font-size:5px";
 				fntszsimple = "width:100%;font-size:9px";
 			} else {
@@ -294,7 +321,7 @@ export class groomReportTable {
 		}
 		let tblsrc = "";
 		try {
-			if (this.reportType === 2) {
+			if (reportType === 2) {
 				tblsrc = '<table style="' + fntszfull;
 				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
 		border: 1px solid black;border-collapse: collapse;">');
@@ -339,7 +366,7 @@ export class groomReportTable {
 		let rgnHtml = ""
 		if (srtRws.length < 1) {
 			let txt="No Data!";
-			if (this.reportType>0)
+			if (reportType>0)
 				txt=txt.concat(" Try different region or longer time period")
 			tblsrc = tblsrc.concat('<tr style="background-color:rgb(180,0,0);border: 1px solid black;border-collapse: collapse;">\
 			<td colspan="4">'+txt+'</td>\
@@ -350,17 +377,17 @@ export class groomReportTable {
 			for (var i = 0; i < srtRws.length; i++) {
 				rgnHtml = ""
 				rwHtml = ""
-				if ((this.reportType > 0) && ((this.region.toLowerCase() === "all") && (lstRgn !== srtRws[i]["region"]))) {
+				if ((reportType > 0) && ((region.toLowerCase() === "all") && (lstRgn !== srtRws[i]["region"]))) {
 					// console.log("buildGrmRptTable found region "+srtRws[i]["region"]);
 					rgnHtml = '<tr style="text-align:center;background-color:rgb(255,255,255)">'
 					rgnHtml = rwHtml.concat('<td colspan="3" style="text-align:center;background-color:rgb(255,255,255)">' + srtRws[i]["region"] + '</td>')
 				} else {
 					// console.log("buildGrmRptTable bypass region "+srtRws[i]["region"]+"; lstRgn "+lstRgn+"; item # "+i);
 				}
-				// console.log("buildGrmRptTable trail: " + srtRws[i]["trailName"] + "(" + thisTrail + ")" + "; this.reportType: " + this.reportType + "; priority: " + srtRws[i]["priority"] + "; mach: " + srtRws[i]["groomMachNbr"]);
-				if (((this.reportType === 0) && (srtRws[i]["priority"] === 1) && (thisTrail !== srtRws[i]["trailName"])) ||
-					(this.reportType === 2) ||
-					((this.reportType === 1) && (thisTrail !== srtRws[i]["trailName"]))) {
+				// console.log("buildGrmRptTable trail: " + srtRws[i]["trailName"] + "(" + thisTrail + ")" + "; reportType: " + reportType + "; priority: " + srtRws[i]["priority"] + "; mach: " + srtRws[i]["groomMachNbr"]);
+				if (((reportType === 0) && (srtRws[i]["priority"] === 1) && (thisTrail !== srtRws[i]["trailName"])) ||
+					(reportType === 2) ||
+					((reportType === 1) && (thisTrail !== srtRws[i]["trailName"]))) {
 					var rowClr=this.getDateColor(srtRws[i]["fullDate"]);
 					rwHtml = rwHtml.concat('<tr style="background-color:' + rowClr.color + ';border: 1px solid black;border-collapse: collapse;">')
 					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailName"] + '</td>')
@@ -371,7 +398,7 @@ export class groomReportTable {
 						else
 							rwHtml = rwHtml.concat('<td style="border: thin solid black">' + "No" + '</td>')
 					}
-					if (this.reportType === 2) {
+					if (reportType === 2) {
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomMach"] + '</td>')
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailCondx"] + '</td>')
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["grmrCmnt"] + '</td>')
@@ -391,8 +418,8 @@ export class groomReportTable {
 		return tblsrc;
 	}
 
-	async fillGrmRptTbl(trType) {
-		if (this.region.length < 2)
+	this.fillGrmRptTbl = async (trType) => {
+		if (region.length < 2)
 			return;
 		let rtrnHtml = "";
 		this._getWinInfo();

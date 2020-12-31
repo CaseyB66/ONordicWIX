@@ -2,6 +2,7 @@
 import wixData from 'wix-data';
 import wixSearch from 'wix-search';
 import wixWindow from 'wix-window';
+import {groomReportTable} from 'public/GroomReport.js' 
 
 const __nrEntryRows = 12;
 
@@ -15,7 +16,6 @@ var getKeys = function(obj){
 
 let _trailCondxTbleNdx = -1;
 let _trailDataSubmit = 1; // 0: new trail, not submitted; 1: old trail, not submitted; 3: submitted OK
-let _saveTime=""
 let _groomerList = [];
 let _trailList = [];
 // Data covered will be set to -1 for new trail picked.
@@ -101,7 +101,6 @@ $w.onReady(function () {
 	}
 	$w("#trailGroomDate").disabledDates = badDates;
 
-	_saveTime = $w('#trailGroomTime').value;
 	if (_groomerList.length > 0) {
 		console.log("onReady first groomer " + _groomerList[0].title)
 	}
@@ -573,13 +572,13 @@ export async function submitBtn_click(event) {
 	});
 
 	$w('#submitBtn').disable();
-	_saveTime = $w('#trailGroomTime').value;
 	let toInsert = {}
 	let grpStr=""
 	let trlStr=""
 	let clscRd=""
 	let grmrRd=""
 	let thisTrail=""
+	let grmRpt = new groomReportTable("All", 64800, 1);
 	for (var i = 0; i < __nrEntryRows; i++) {
 		trlStr = ('#trailLabel'+(i+1));
 		grpStr = ('#trGrp' + (i + 1));
@@ -596,32 +595,20 @@ export async function submitBtn_click(event) {
 			console.log("submitBtn: for "+thisTrail+"; using "+clscRd+"; classicSet " + $w(clscRd).value)
 			grmrRd=('#grmMachRadio'+(i+1))
 			toInsert = {
-				"title": o.format(trlGrmDate),
-				"trailCondition": trlCndx,
-				"groomDate": trlGrmDate,
-				"classicSet": $w(clscRd).value > 0,
-				"groomMachine": $w(grmrRd).value,
-				"groomerComment": $w('#commentEdit').value,
-				"editDate": new Date(),
-				"trailRef": trailId,
-				"groomerRef": groomerId
+				trailName:thisTrail,
+				title: o.format(trlGrmDate),
+				trailCondition: trlCndx,
+				groomDate: trlGrmDate,
+				classicSet: $w(clscRd).value > 0,
+				groomMachine: $w(grmrRd).value,
+				groomerComment: $w('#commentEdit').value,
+				editDate: new Date(),
+				trailRef: trailId,
+				groomerRef: groomerId
 			};
-			let newItmRef = "";
-			try {
-				console.log("submitBtn_click calling insert, render env = "+wixWindow.rendering.env)
-				let results = await wixData.insert("skiGroomingTable", toInsert);
-				if (results !== undefined) {
-					_saveTime = $w('#trailGroomTime').value;
-					let item = results;
-					console.log("submitBtn: for "+thisTrail+"; result " + results)
-					newItmRef = item._id;
-					// let tblrws = $w('#trailsDoneTbl').rows;
-					// tblrws.push(item);
-					// $w('#trailsDoneTbl').rows=tblrws;
-				}
-			} catch (err) {
-				console.log("submitBtn_click caught submit error " + err)
-			}
+		let fromInsert = grmRpt.insertSkiGroomerData(toInsert);
+		console.log("submitBtn: for trail " + fromInsert.trailName)
+
 		}
 
 	}
