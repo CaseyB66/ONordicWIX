@@ -51,6 +51,4 @@ async function fillGroomRpt(){
 	} else {
 
 	}
-
-
 }

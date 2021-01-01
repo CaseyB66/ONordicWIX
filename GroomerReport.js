@@ -63,35 +63,94 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 
 	this.insertSkiGroomerData = async (toInsert) => {
 		var rtrn = {groomDataRef:"", trailRef:"", groomerRef:"",trailName:"",groomDate:null}
-			let newItmRef = "";
-			try {
-				console.log("submitBtn_click calling insert, render env = "+wixWindow.rendering.env)
-				let results = await wixData.insert("skiGroomingTable", toInsert);
-				if (results !== undefined) {
-					let item = results;
-					console.log("insertSkiGroomerData: for "+toInsert.trailName+"; result " + results)
-					rtrn.groomDataRef = item._id;
-					rtrn.trailName = toInsert.trailName;
-					rtrn.trailRef = toInsert.trailRef;
-					rtrn.groomerRef =  toInsert.groomerRef;
-					rtrn.groomDate = toInsert.groomDate;
-					// let tblrws = $w('#trailsDoneTbl').rows;
-					// tblrws.push(item);
-					// $w('#trailsDoneTbl').rows=tblrws;
-				}
-			} catch (err) {
-				console.log("submitBtn_click caught submit error " + err)
+		let newItmRef = "";
+		try {
+			console.log("insertSkiGroomerData calling insert, render env = "+wixWindow.rendering.env)
+			let results = await wixData.insert("skiGroomingTable", toInsert);
+			if (results !== undefined) {
+				let item = results;
+				console.log("insertSkiGroomerData: for "+item.trailRef['title']+"; result " + item)
+				rtrn.groomDataRef = item._id;
+				rtrn.trailRef = toInsert.trailRef;
+				rtrn.groomerRef =  toInsert.groomerRef;
+				rtrn.groomDate = toInsert.groomDate;
+				// let tblrws = $w('#trailsDoneTbl').rows;
+				// tblrws.push(item);
+				// $w('#trailsDoneTbl').rows=tblrws;
 			}
+		} catch (err) {
+			console.log("submitBtn_click caught submit error " + err)
+		}
 		return rtrn;
 	}
 
-	this._skiGroomingTableQuery = async (trType) => {
+	this.updateSkiGroomerData = async (toInsert) => {
+		var rtrn = {groomDataRef:"", trailRef:"", groomerRef:"",trailName:"",groomDate:null}
+		let newItmRef = "";
+		try {
+			console.log("updateSkiGroomerData calling update, render env = "+wixWindow.rendering.env)
+			let results = await wixData.update("skiGroomingTable", toInsert);
+			if (results !== undefined) {
+				let item = results;
+				console.log("updateSkiGroomerData: for "+item.trailRef['title']+"; result " + item)
+				rtrn.groomDataRef = item._id;
+				rtrn.trailRef = toInsert.trailRef;
+				rtrn.groomerRef =  toInsert.groomerRef;
+				rtrn.groomDate = toInsert.groomDate;
+				// let tblrws = $w('#trailsDoneTbl').rows;
+				// tblrws.push(item);
+				// $w('#trailsDoneTbl').rows=tblrws;
+			}
+		} catch (err) {
+			console.log("submitBtn_click caught submit error " + err)
+		}
+		return rtrn;
+	}
+
+	this._skiGroomingTableQueryByEditDate = async (trType) => {
 		let mchfltr = '1';
-		if (reportType === 2)
+		let trlDnItems = [];
+		if (reportType > 1)
 			mchfltr = '0'
 
-		console.log("_skiGroomingTableQuery starting...")
-        var trlDnItems = [];
+		console.log("_skiGroomingTableQueryByEditDate starting...")
+		try {
+			const results = await wixData.query("skiGroomingTable")
+				.include("trailRef")
+				.include("groomerRef")
+				.limit(500)
+				.ge("editDate", fltrDate)
+				.ge("groomMachine", mchfltr)
+				.find();
+			let qryItems = results.items;
+			if (undefined === trlDnItems){
+				console.log("_skiGroomingTableQueryByEditDate found NO results!")
+				lstRprtDate=new Date();
+				return trlDnItems;
+			}
+			else{
+				for (var j=0;j<qryItems.length;j++){
+					if (qryItems[j]['trailRef']['trailType']===trType){
+						trlDnItems.push(qryItems[j])
+					}
+				}
+				console.log("_skiGroomingTableQueryByEditDate from "+qryItems.length + " qryItems, retured " + trlDnItems.length)
+			}
+		} catch (err) {
+			lstRprtDate=new Date();
+			console.log("_skiGroomingTableQueryByEditDate caught error " + err)
+			return trlDnItems;
+		}
+    return trlDnItems;
+	}
+
+	this._skiGroomingTableQueryByGroomDate = async (trType) => {
+		let mchfltr = '1';
+		let trlDnItems = [];
+		if (reportType > 1)
+			mchfltr = '0'
+
+		console.log("_skiGroomingTableQueryByGroomDate starting...")
 		try {
 			const results = await wixData.query("skiGroomingTable")
 				.include("trailRef")
@@ -100,22 +159,34 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 				.ge("groomDate", fltrDate)
 				.ge("groomMachine", mchfltr)
 				.find();
-			trlDnItems = results.items;
+			let qryItems = results.items;
 			if (undefined === trlDnItems){
-				console.log("_skiGroomingTableQuery found NO results!")
+				console.log("_skiGroomingTableQueryByGroomDate found NO results!")
 				lstRprtDate=new Date();
-				return [];
+				return trlDnItems;
 			}
-			else
-				console.log("_skiGroomingTableQuery retured " + trlDnItems.length)
+			else{
+				for (var j=0;j<qryItems.length;j++){
+					if (qryItems[j]['trailRef']['trailType']===trType){
+						trlDnItems.push(qryItems[j])
+					}
+				}
+				console.log("_skiGroomingTableQueryByGroomDate from "+qryItems.length + " qryItems, retured " + trlDnItems.length)
+			}
 		} catch (err) {
 			lstRprtDate=new Date();
-			console.log("_skiGroomingTableQuery caught error " + err)
-			return [];
+			console.log("_skiGroomingTableQueryByGroomDate caught error " + err)
+			return trlDnItems;
 		}
+    return trlDnItems;
+	}
+
+	this._skiGroomingTableQueryDsply = async (trType) => {
+		console.log("_skiGroomingTableQueryDsply starting...")
+        var trlDnItems = await this._skiGroomingTableQueryByGroomDate(trType);
 		if ((trlDnItems === undefined) || (trlDnItems.length < 1)) {
 			lstRprtDate=new Date();
-			console.log("_skiGroomingTableQuery exiting with no results from query")
+			console.log("_skiGroomingTableQueryDsply exiting with no results from query")
 			return [];
 		}
 		let timStr = ""
@@ -136,7 +207,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 					if (trType==="ski")
 						machtxt = "Cat";
 					else
-						machtxt = "SnwMob"
+						machtxt = "SnowMobile"
 				}
 				if (trlDnItems[j]["groomMachine"] === '2') {
 					if (trType==="ski")
@@ -176,10 +247,11 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 		}
 		if (newRws.length<1)
 		  lstRprtDate = new Date();
+		console.log("_skiGroomingTableQueryDsply exiting with lstRprtDate "+lstRprtDate.toLocaleDateString())		  
     return newRws;
 	}
 
-	this.getSkiDifficultyObject = async (dffclty) => {
+	this.getSkiDifficultyObject = (dffclty) => {
 		let color4 = "rgb(250,0,0)";
 		let color5 = "rgb(200,0,0)";
 		let color1 = "rgb(0,250,0)";
@@ -246,23 +318,27 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 
 		try {
 			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
-			if ((tblCmnt.length > 0) && 
-			    (lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime() < 60000)) {
-				let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
-				console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
-				let cmntlgth = tblCmnt[0]["title"].length;
-				if (cmntlgth<108){
-					cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
-					border-radius: 8px;padding: 10px;font-size:16px">';
+			if (tblCmnt.length>0){
+				let tdiff=Math.abs(lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime())
+				console.log("_skiGroomCommentHTML found lstRprtDate: "+lstRprtDate.toString()+" with groomDate "+tblCmnt[0]["groomDate"].toString())
+				console.log("_skiGroomCommentHTML found query result: "+tblCmnt.length+" with tdiff "+tdiff)
+				if (tdiff < 7200000) {
+					let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
+					console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
+					let cmntlgth = tblCmnt[0]["title"].length;
+					if (cmntlgth<108){
+						cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+						border-radius: 8px;padding: 10px;font-size:16px">';
+					} else {
+						cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+						border-radius: 8px;padding: 10px;font-size:12px">';
+					}
+					cmnthtml = cmnthtml.concat(timStr + ": ");
+					cmnthtml = cmnthtml.concat(tblCmnt[0]["title"])
+					cmnthtml = cmnthtml.concat("</p>")
 				} else {
-					cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
-					border-radius: 8px;padding: 10px;font-size:12px">';
+					cmnthtml = ""
 				}
-				cmnthtml = cmnthtml.concat(timStr + ": ");
-				cmnthtml = cmnthtml.concat(tblCmnt[0]["title"])
-				cmnthtml = cmnthtml.concat("</p>")
-			} else {
-				cmnthtml = ""
 			}
 
 		} catch (err) {
@@ -280,7 +356,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 				.ge("groomDate", fltrDate)
 				.find();
 			var cmntItems = results.items;
-
+			console.log("skiGroomCommentTableQuery sortng "+cmntItems.length);
 			var tblCmnt = cmntItems.sort(function (a, b) {
 				var dateA = a.groomDate;
 				var dateB = b.groomDate;
@@ -293,7 +369,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 				return 0;
 			});
 		} catch (err) {
-			console.log("fillgrmRptTable caught error getting general comment" + err)
+			console.log("skiGroomCommentTableQuery caught error getting general comment" + err)
 			throw err;
 		}
 		return tblCmnt;
@@ -321,7 +397,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 		}
 		let tblsrc = "";
 		try {
-			if (reportType === 2) {
+			if (reportType > 1) {
 				tblsrc = '<table style="' + fntszfull;
 				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
 		border: 1px solid black;border-collapse: collapse;">');
@@ -336,8 +412,11 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			if (trType==='ski'){
 				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Clsc Reset</th>');
 			}
-			tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Mach</th> \
-			<th style="text-align: left;border: 1px solid black;">Condition</th> \
+		else{
+				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Machine</th>');
+			}
+			// tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Mach</th> \
+			tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Condition</th> \
 			<th style="text-align: left;border: 1px solid black;">Comment</th> \
 			<th style="text-align: left;border: 1px solid black;">Groomer</th> \
 		</tr>');
@@ -356,6 +435,8 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			<th style="text-align: left">Time last Groom</th>');
 			if (trType==='ski'){
 				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Clsc Reset</th>');
+			} else {
+				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Machine</th>');
 			}
 			tblsrc = tblsrc.concat('</tr>');
 			}
@@ -386,7 +467,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 				}
 				// console.log("buildGrmRptTable trail: " + srtRws[i]["trailName"] + "(" + thisTrail + ")" + "; reportType: " + reportType + "; priority: " + srtRws[i]["priority"] + "; mach: " + srtRws[i]["groomMachNbr"]);
 				if (((reportType === 0) && (srtRws[i]["priority"] === 1) && (thisTrail !== srtRws[i]["trailName"])) ||
-					(reportType === 2) ||
+					(reportType > 1) ||
 					((reportType === 1) && (thisTrail !== srtRws[i]["trailName"]))) {
 					var rowClr=this.getDateColor(srtRws[i]["fullDate"]);
 					rwHtml = rwHtml.concat('<tr style="background-color:' + rowClr.color + ';border: 1px solid black;border-collapse: collapse;">')
@@ -398,8 +479,11 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 						else
 							rwHtml = rwHtml.concat('<td style="border: thin solid black">' + "No" + '</td>')
 					}
-					if (reportType === 2) {
+					else{
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomMach"] + '</td>')
+					}
+					if (reportType > 1) {
+						// rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomMach"] + '</td>')
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["trailCondx"] + '</td>')
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["grmrCmnt"] + '</td>')
     					rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["grmr"] + '</td>')
@@ -424,7 +508,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 		let rtrnHtml = "";
 		this._getWinInfo();
 		try {
-			let newRws = await this._skiGroomingTableQuery(trType);
+			let newRws = await this._skiGroomingTableQueryDsply(trType);
 			console.log("fillgrmRptTable for trType "+trType+"; newRws " + newRws.length)
 			if (newRws.length < 1) {
 				console.log("fillgrmRptTable exiting with empty newRws")

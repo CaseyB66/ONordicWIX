@@ -1,5 +1,6 @@
 import wixData from 'wix-data';
 import wixSearch from 'wix-search';
+import {groomReportTable} from 'public/GroomReport.js' 
 
 const __nrEntryRows = 12;
 const __fstEntryRow = 4;
@@ -17,6 +18,8 @@ let _trailDataSubmit = 1; // 0: new trail, not submitted; 1: old trail, not subm
 let _saveTime=""
 let _groomerList = [];
 let _trailList = [];
+let _trailsDone = [];
+
 // Data covered will be set to -1 for new trail picked.
 // Then we add one for every chunk of data filled in.
 // For submit button to be active, it must have value 3 or greater.
@@ -86,6 +89,7 @@ $w.onReady(function () {
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
 	$w('#genCmntEdit').maxLength=192;
+	$w('#genCmntSubmitBtn').disable();
 
 	$w('#removeTrailCondxBtn').disable();
 	$w('#trailCondxTbl').rows = []
@@ -225,14 +229,8 @@ async function fillTrailsDoneTbl(){
 
 	console.log("fillTrailsDoneTbl doing query... for groomer "+$w('#groomersDrpDn').value);
 	try {
-		const results = await wixData.query("skiGroomingTable")
-		.include("trailRef")
-		.include("groomerRef")
-		.limit(20)
-		.ge("editDate",fltrDate)
-		// .contains("groomerRef.title", $w('#groomersDrpDn').value)
-		.find();
-		var trlDnItems = results.items;
+		let grmRpt = new groomReportTable("All", 6, 1);
+		var trlDnItems = await grmRpt._skiGroomingTableQueryByEditDate("bike");
 		console.log("fillTrailsDoneTbl trail "+trlDnItems[0]["trailRef"]["title"]+"; groomer "+trlDnItems[0]["groomerRef"]["title"])
 		oldTrails=$w('#trailsDoneTbl').rows;
 		$w('#trailsDoneTbl').rows=[];
@@ -246,6 +244,7 @@ async function fillTrailsDoneTbl(){
 		for (var j=0;j<trlDnItems.length;j++){
 			oldfnd=false
 			if (trlDnItems[j]["groomerRef"]["title"]===$w('#groomersDrpDn').value){
+				_trailsDone.push(trlDnItems[j]);
 				if (oldTrails.length>0){
 					for (var t=0;t<oldTrails.length;t++){
 						if (oldTrails[t].trailDone===trlDnItems[j]["trailRef"]["title"]){
@@ -266,7 +265,68 @@ async function fillTrailsDoneTbl(){
 	catch (err){
 		console.log("fillTrailsDoneTbl caught error "+err)
 	}
+	checkTrailsDoneAgainstMatrix();
 }
+
+function setGrmMachRadio(vlu,trNbr){
+	let tmpRd = ('#grmMachRadio'+trNbr);
+	$w(tmpRd).value=vlu;
+}
+
+
+export function checkTrailsDoneAgainstMatrix(){
+	let trlStr="";
+	let grpStr="";
+	let j=0; let k=0;
+	let fldsSet=0;
+	for (k = __fstEntryRow; k < __nrEntryRows; k++) {
+		trlStr = ('#trailLabel'+(k+1));
+		grpStr = ('#trGrp' + (k + 1));
+		let trlNdx=$w(trlStr).selectedIndices;
+		let trlOpts=$w(trlStr).options;
+		let trlfnd=false;
+		for (j=0;j<_trailsDone.length;j++){
+			if (trlOpts[0].label.normalize() === _trailsDone[j]["trailRef"]["title"].normalize()){
+				setTrailLabel(_trailsDone[j]["trailRef"]["title"], k+1)
+				setGrmMachRadio(_trailsDone[j]["groomMachine"],k+1)
+				fldsSet += 1;
+				trlfnd=true;
+			}
+		}
+		if ((trlfnd === false) && (_trailsDone.length>0)){
+			$w(trlStr).selectedIndices = [];
+		}
+	}
+	if (fldsSet>0){
+		let tblrws = $w('#trailCondxTbl').rows;
+		let newRws=_trailsDone[0]["trailCondition"].split(";");
+		let i=0;
+		if (newRws.length>0){
+			let newTblRws=[]
+			for (i=0;i<newRws.length;i++){
+				newTblRws.push({'trail_conditions': newRws[i]});	
+			}
+			console.log("checkTrailsDoneAgainstMatrix found trailCondx "+_trailsDone[0]["trailCondition"]+"; split =" + newRws)
+			$w('#trailCondxTbl').rows=newTblRws;
+		}
+	let dtoptions = {
+		hour: '2-digit', minute: '2-digit',
+		hour12: false
+	};		
+	
+	let trlGrmDate = _trailsDone[0]["groomDate"];
+	$w('#trailGroomDate').value=trlGrmDate;
+	// 03:28 PM
+	let tmpNr=trlGrmDate.getHours();
+	let timStr=Intl.DateTimeFormat('en-US', dtoptions).format(trlGrmDate);
+	let grmTime = $w('#trailGroomTime').value = timStr;
+	console.log("checkTrailsDoneAgainstMatrix found groomDate "+trlGrmDate+"; set Date to "+$w('#trailGroomDate').value
+		+"; set Time to "+$w('#trailGroomTime').value)
+
+	}
+
+}
+
 
 export function groomerPwdEdit_change(event) {
 	var chkPwd="";
@@ -578,15 +638,19 @@ export async function submitBtn_click(event) {
 		dateStyle: "medium"
 	});
 
-	$w('#submitBtn').disable();
+	var insertArray = [];
+	var updateArray = [];
+
+	await $w('#submitBtn').disable();
+	let toInsert = {}
 	
 	_saveTime = $w('#trailGroomTime').value;
-	let toInsert = {}
 	let grpStr=""
 	let trlStr=""
 	let grmrRd=""
 	let thisTrail=""
 	let trlLstNdx=0;
+	let grmRpt = new groomReportTable("All", 64800, 1);
 	for (var i = __fstEntryRow-1; i < __nrEntryRows; i++) {
 		trlStr = ('#trailLabel'+(i+1));
 		grpStr = ('#trGrp' + (i + 1));
@@ -601,57 +665,58 @@ export async function submitBtn_click(event) {
 				break;
 			if ((trailId.length < 2) || (groomerId.length < 2))
 				break;
-			console.log("submitBtn: for "+thisTrail)
-			grmrRd=('#grmMachRadio'+(i+1))
-			toInsert = {
-				"title": o.format(trlGrmDate),
-				"trailCondition": trlCndx,
-				"groomDate": trlGrmDate,
-				"classicSet": false,
-				"groomMachine": $w(grmrRd).value,
-				"groomerComment": $w('#commentEdit').value,
-				"editDate": new Date(),
-				"trailRef": trailId,
-				"groomerRef": groomerId
-			};
-			let newItmRef = "";
-			try {
-				let results = await wixData.insert("skiGroomingTable", toInsert);
-				if (results !== undefined) {
-					_saveTime = $w('#trailGroomTime').value;
-					let item = results;
-					console.log("submitBtn: for "+thisTrail+"; result " + results)
-					newItmRef = item._id;
-					// let tblrws = $w('#trailsDoneTbl').rows;
-					// tblrws.push(item);
-					// $w('#trailsDoneTbl').rows=tblrws;
+			grmrRd=('#grmMachRadio'+(i+1)) // grmMachRadio4
+			console.log("submitBtn: for "+trlLstNdx+"; name "+thisTrail+"; mach "+grmrRd+"/"+$w(grmrRd).value)
+			if ($w(grmrRd).value>0){
+				toInsert = {
+					title: o.format(trlGrmDate),
+					trailCondition: trlCndx,
+					groomDate: trlGrmDate,
+					classicSet: false,
+					groomMachine: $w(grmrRd).value.toString(),
+					groomerComment: $w('#commentEdit').value,
+					editDate: new Date(),
+					trailRef: trailId,
+					groomerRef: groomerId
+				};
+				let updateFnd=false;
+				if (_trailsDone.length>0){
+					for (var k=0;k<_trailsDone.length;k++){
+						console.log("submitBtn: checking trailsDone " + _trailsDone[k]['trailRef']["title"]+'; thisTrail '+thisTrail)
+						if (thisTrail.normalize()===_trailsDone[k]['trailRef']["title"].normalize()){
+							console.log("submitBtn_click found update item, adding _id "+_trailsDone[k]['_id']+"; name "+thisTrail)
+							toInsert._id = _trailsDone[k]['_id'];
+							updateFnd=true;
+							updateArray.push(toInsert)
+							break;
+						}
+					}
 				}
-			} catch (err) {
-				console.log("submitBtn_click caught submit error " + err)
-			}
-		}
+				if (updateFnd===false){
+					insertArray.push(toInsert);
+				}
 
-	}
-	if ($w('#genCmntEdit').value.length>2){
-		try {
-			toInsert = {
-				"title": $w('#genCmntEdit').value,
-				"groomDate": trlGrmDate,
-				"trailType": "bike",
-				"groomerRef": groomerId
-			};
-			let results = await wixData.insert("skiGroomCommentTable", toInsert);
-			if (results !== undefined) {
 			}
 		}
-		catch (err) {
-			console.log("submitBtn_click caught error submit to SkiGroomComment " + err)
+	}
+	if (insertArray.length>0){
+		for (i=0;i<insertArray.length;i++){
+			let fromInsert = await grmRpt.insertSkiGroomerData(insertArray[i]);
+			console.log("submitBtn: INSERT for trail " + fromInsert.trailRef)
 		}
 	}
+	if (updateArray.length>0){
+		for (i=0;i<updateArray.length;i++){
+			let fromInsert = await grmRpt.updateSkiGroomerData(updateArray[i]);
+			console.log("submitBtn: UPDATE for trail " + fromInsert.trailRef)
+		}
+	}
+
 	fillTrailsDoneTbl();
 	clearEntryFields();
 	checkSubmit();	
 }
+
 export function trailGroomDate_change(event) {
 	_setElmntsChng("Date",true);
 	_trailDataSubmit = 1;
@@ -693,4 +758,53 @@ export function loginErrorText_click_1(event) {
 	if ($w('#loginErrorText').isVisible){
 		$w('#loginErrorText').hide();
 	}
+}
+
+export async function genCmntSubmitBtn_click(event) {
+	let groomerId = "";
+	if (_groomerList.length < 1)
+	{
+		console.log("submitBtn: returning with no groomerList!")
+		return;
+	}
+	for (var i = 0; i < _groomerList.length; i++) {
+		if (_groomerList[i].title === $w('#groomersDrpDn').value) {
+			groomerId = _groomerList[i]._id;
+		}
+	}
+	if ($w('#genCmntEdit').value.length>2){
+		let toInsert = {}
+		let trlGrmDate = $w('#trailGroomDate').value;
+		let grmTime = $w('#trailGroomTime').value;
+		let hour = Number(grmTime.substr(0, 2));
+		let minute = Number(grmTime.substr(3, 2));
+		trlGrmDate.setHours(hour);
+		trlGrmDate.setMinutes(minute);
+		try {
+			toInsert = {
+				"title": $w('#genCmntEdit').value,
+				"groomDate": trlGrmDate,
+				"trailType": "bike",
+				"groomerRef": groomerId
+			};
+			let results = await wixData.insert("skiGroomCommentTable", toInsert);
+			if (results !== undefined) {
+				$w('#genCmntEdit').value="";
+				await $w('#genCmntSubmitBtn').disable();
+			}
+		}
+		catch (err) {
+			console.log("submitBtn_click caught error submit to SkiGroomComment " + err)
+		}
+	}
+}
+
+export async function genCmntEdit_blur(event) {
+	if (($w('#genCmntEdit').value.length<0) && ($w('#genCmntSubmitBtn').enabled)){
+		await $w('#genCmntSubmitBtn').disable();
+	}
+	if (($w('#genCmntEdit').value.length>1) && (!$w('#genCmntSubmitBtn').enabled)){
+		await $w('#genCmntSubmitBtn').enable();
+	}
+
 }
