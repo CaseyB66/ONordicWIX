@@ -322,7 +322,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 				let tdiff=Math.abs(lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime())
 				console.log("_skiGroomCommentHTML found lstRprtDate: "+lstRprtDate.toString()+" with groomDate "+tblCmnt[0]["groomDate"].toString())
 				console.log("_skiGroomCommentHTML found query result: "+tblCmnt.length+" with tdiff "+tdiff)
-				if (tdiff < 7200000) {
+				if (tdiff < 21600000) {   // 6 hours = 6 x 3600
 					let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 					console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
 					let cmntlgth = tblCmnt[0]["title"].length;

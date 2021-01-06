@@ -89,7 +89,7 @@ $w.onReady(function () {
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
 	$w('#genCmntEdit').maxLength=192;
-	$w('#genCmntSubmitBtn').disable();
+	$w('#genCmntSubmitBtn').enable();
 
 	$w('#removeTrailCondxBtn').disable();
 	$w('#trailCondxTbl').rows = []
@@ -760,6 +760,9 @@ export function loginErrorText_click_1(event) {
 	}
 }
 
+export async function genCmntEdit_blur(event) {
+}
+
 export async function genCmntSubmitBtn_click(event) {
 	let groomerId = "";
 	if (_groomerList.length < 1)
@@ -780,6 +783,7 @@ export async function genCmntSubmitBtn_click(event) {
 		let minute = Number(grmTime.substr(3, 2));
 		trlGrmDate.setHours(hour);
 		trlGrmDate.setMinutes(minute);
+		console.log("genCmntSubmitBtn_click "+$w('#genCmntEdit').value);
 		try {
 			toInsert = {
 				"title": $w('#genCmntEdit').value,
@@ -789,22 +793,15 @@ export async function genCmntSubmitBtn_click(event) {
 			};
 			let results = await wixData.insert("skiGroomCommentTable", toInsert);
 			if (results !== undefined) {
+				console.log("genCmntSubmitBtn_click OK");
 				$w('#genCmntEdit').value="";
-				await $w('#genCmntSubmitBtn').disable();
+			}
+			else {
+				console.log("genCmntSubmitBtn_click FAIL");
 			}
 		}
 		catch (err) {
 			console.log("submitBtn_click caught error submit to SkiGroomComment " + err)
 		}
 	}
-}
-
-export async function genCmntEdit_blur(event) {
-	if (($w('#genCmntEdit').value.length<0) && ($w('#genCmntSubmitBtn').enabled)){
-		await $w('#genCmntSubmitBtn').disable();
-	}
-	if (($w('#genCmntEdit').value.length>1) && (!$w('#genCmntSubmitBtn').enabled)){
-		await $w('#genCmntSubmitBtn').enable();
-	}
-
 }

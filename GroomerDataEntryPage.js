@@ -72,7 +72,7 @@ $w.onReady(function () {
 	fillTrailRgnDrpDn();
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
-	$w('#genCmntSubmitBtn').disable();
+	$w('#genCmntSubmitBtn').enable();
 
 	$w('#genCmntEdit').maxLength=192;
 
@@ -758,10 +758,7 @@ export async function submitBtn_click(event) {
 }
 
 export async function genCmntEdit_change(event) {
-	if ($w('#genCmntEdit').value.length>0 && !$w('#genCmntSubmitBtn').enabled)
-		await $w('#genCmntSubmitBtn').enable();
-	if ($w('#genCmntEdit').value.length<1 && $w('#genCmntSubmitBtn').enabled)
-			await $w('#genCmntSubmitBtn').disable();
+	
 }
 
 export async function genCmntSubmitBtn_click(event) {
@@ -793,7 +790,7 @@ export async function genCmntSubmitBtn_click(event) {
 			};
 			let results = await wixData.insert("skiGroomCommentTable", toInsert);
 			if (results !== undefined) {
-				await $w('#genCmntSubmitBtn').disable();
+				await $w('#genCmntSubmitBtn').enable();
 				$w('#genCmntEdit').value="";
 			}
 		}
