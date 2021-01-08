@@ -50,7 +50,7 @@ $w.onReady(function () {
 function fillTrailRgnDrpDn() {
 	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
 	wixData.query("skiTrailsTable")
-		.limit(20)
+		.limit(200)
 		.gt("reportPriority",-1)
 		.eq("trailType", trType)
 		.ascending("viewSort")

@@ -292,7 +292,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			for (ii=0;ii<dateColorDefn.length;ii++){
 				if (gethrs<dateColorDefn[ii].hrs){
 					rtrn.color = dateColorDefn[ii].color;
-					if (ii<dateColorDefn.length-1)
+					if (ii<dateColorDefn.length)
 						rtrn.valid=true;
 					break;
 				}
@@ -412,14 +412,11 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			if (trType==='ski'){
 				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Clsc Reset</th>');
 			}
-		else{
-				tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Machine</th>');
-			}
+			tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Machine</th>');
 			// tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Mach</th> \
 			tblsrc = tblsrc.concat('<th style="text-align: left;border: 1px solid black;">Condition</th> \
 			<th style="text-align: left;border: 1px solid black;">Comment</th> \
-			<th style="text-align: left;border: 1px solid black;">Groomer</th> \
-		</tr>');
+			<th style="text-align: left;border: 1px solid black;">Groomer</th> </tr>');
 			} else {
 				tblsrc = '<table style="width:60%;margin-left:auto;margin-right:auto;' + fntszsimple;
 				tblsrc = tblsrc.concat(';overflow-y:auto;background-color:rgb(250,250,250);\
@@ -479,7 +476,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 						else
 							rwHtml = rwHtml.concat('<td style="border: thin solid black">' + "No" + '</td>')
 					}
-					else{
+					if ((trType==='bike') || ((trType==='ski') && (reportType>1))){
 						rwHtml = rwHtml.concat('<td style="border: thin solid black">' + srtRws[i]["groomMach"] + '</td>')
 					}
 					if (reportType > 1) {
