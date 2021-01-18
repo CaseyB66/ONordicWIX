@@ -137,21 +137,26 @@ $w.onReady(function () {
 
 function hideTrailLabels(){
 	for (var i=0;i<__nrEntryRows;i++){
-		let tmpStr=('#trGrp'+(i+1));
-		// console.log("hideTrailLabels "+tmpStr)
-		$w(tmpStr).hide();
+		let trlStr = ('#trailLabel'+(i+1));
+		let grmMchStr = ('#grmMachRadio'+(i+1))
+		let clscStr = ('#classicRadio'+(i+1))
+		$w(trlStr).hide();
+		$w(grmMchStr).hide();
+		$w(clscStr).hide();
 	}
 }
 
 function setTrailLabel(trStr,trNbr){
-	let tmpStr = ('#trGrp'+trNbr);
-	$w(tmpStr).show();
-	tmpStr = ('#trailLabel'+trNbr);
-	let trlOpts=$w(tmpStr).options;
+	let trlStr = ('#trailLabel'+trNbr);
+	let grmMchStr = ('#grmMachRadio'+trNbr)
+	let clscStr = ('#classicRadio'+trNbr)
+	$w(trlStr).show();
+	$w(grmMchStr).show();
+	$w(clscStr).show();
+	let trlOpts=$w(trlStr).options;
 	trlOpts[0].label=trStr;
-	$w(tmpStr).options=trlOpts;
-	$w(tmpStr).selectedIndices=[0];
-
+	$w(trlStr).options=trlOpts;
+	$w(trlStr).selectedIndices=[0];
 }
 
 function setGrmMachRadio(vlu,trNbr){
@@ -172,7 +177,7 @@ function enableEntryFields(_boolVal){
 	if (_boolVal===true){
 		$w('#trailGroomDate').enable();
 		$w('#trailGroomTime').enable();
-		$w('#trailConditionDrpDn').enable();
+		$w('#trailCondxDrpDn').enable();
 		$w('#removeTrailCondxBtn').enable();
 		$w('#classicRadio1').enable();
 		$w('#submitBtn').enable();
@@ -182,7 +187,7 @@ function enableEntryFields(_boolVal){
 	else {
 		$w('#trailGroomDate').disable();
 		$w('#trailGroomTime').disable();
-		$w('#trailConditionDrpDn').disable();
+		$w('#trailCondxDrpDn').disable();
 		$w('#removeTrailCondxBtn').disable();
 		$w('#classicRadio1').disable();
 		$w('#submitBtn').disable();
@@ -262,12 +267,10 @@ async function fillTrailsDoneTbl(fillFields=false){
 
 export function checkTrailsDoneAgainstMatrix(){
 	let trlStr="";
-	let grpStr="";
 	let j=0; let k=0;
 	let fldsSet=0;
 	for (k = 0; k < __nrEntryRows; k++) {
 		trlStr = ('#trailLabel'+(k+1));
-		grpStr = ('#trGrp' + (k + 1));
 		let trlNdx=$w(trlStr).selectedIndices;
 		let trlOpts=$w(trlStr).options;
 		let trlfnd=false;
@@ -402,9 +405,9 @@ function fillTrailConditionDropDn(){
 			.then(results => {
 				const uniqueTitles = getUniqueTrailCondx(results.items);
 				let condxOpts = buildOptions(uniqueTitles);
-				$w('#trailConditionDrpDn').options = condxOpts;
-				$w('#trailConditionDrpDn').selectedIndex=0;
-				trailConditionDrpDn_change(null)
+				$w('#trailCondxDrpDn').options = condxOpts;
+				$w('#trailCondxDrpDn').selectedIndex=0;
+				trailCondxDrpDn_change(null)
 			});
 }
 
@@ -542,26 +545,6 @@ export function trailRgnDrpDn_change(event) {
 	checkSubmit();
 }
 
-export function trailConditionDrpDn_change(event) {
-	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
-	// Add your code for this event here: 
-	let tblrws = $w('#trailCondxTbl').rows;
-	let newelt = $w('#trailConditionDrpDn').value;
-	if (newelt.length>2)
-		tblrws.push({'trail_conditions': newelt});	
-	console.log("trailConditionDrpDn_change: newelt: "+newelt+"; newelt type: "+typeof(newelt));
-	$w('#trailCondxTbl').rows = tblrws;
-	if ($w('#trailCondxTbl').rows.length>0){
-		_setElmntsChng("Condx",true);
-	}
-	else {
-		_setElmntsChng("Condx",false);
-	}
-	_trailDataSubmit = 1;
-	// console.log("trailCondxDrpDn setting Condx " + _getElmntsChng("Condx"))
-	checkSubmit();
-}
-
 export function removeTrailCondxBtn_click(event) {
 	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
 	// Add your code for this event here: 
@@ -632,8 +615,8 @@ export function groomMachRadioALL_change(event) {
 	// Add your code for this event here: 
 	let curVal=$w('#groomMachRadioALL').value;
 	for (var i=0;i<__nrEntryRows;i++){
-		let grpStr=('#trGrp'+(i+1));
-		if (!$w(grpStr).hidden){
+		let trlStr = ('#trailLabel'+(i+1));
+		if (!$w(trlStr).hidden){
 			setGrmMachRadio(curVal,i+1)
 		}
 	}
@@ -644,11 +627,10 @@ export function classicRadioALL_click(event) {
 	// Add your code for this event here: 
 	let curVal=$w('#classicRadioALL').value;
 	for (var i=0;i<__nrEntryRows;i++){
-		let grpStr=('#trGrp'+(i+1));
-		if (!$w(grpStr).hidden){
-			let tmpStr = ('#classicRadio'+(i+1));
-			console.log("classicRadioALL_change setting "+tmpStr+", to: "+curVal)
-			$w(tmpStr).value=curVal;
+		let trlStr = ('#trailLabel'+(i+1));
+		if (!$w(trlStr).hidden){
+			let clscStr = ('#classicRadio'+(i+1));
+			$w(clscStr).value=curVal;
 		}
 	}
 }
@@ -688,7 +670,6 @@ export async function submitBtn_click(event) {
 
 	await $w('#submitBtn').disable();
 	let toInsert = {}
-	let grpStr=""
 	let trlStr=""
 	let clscRd=""
 	let grmrRd=""
@@ -696,9 +677,8 @@ export async function submitBtn_click(event) {
 	let grmRpt = new groomReportTable("All", 64800, 1);
 	for (var i = 0; i < __nrEntryRows; i++) {
 		trlStr = ('#trailLabel'+(i+1));
-		grpStr = ('#trGrp' + (i + 1));
 		let trlNdx=$w(trlStr).selectedIndices;
-		if (!$w(grpStr).hidden && (trlNdx.length>0)) {
+		if (!$w(trlStr).hidden && (trlNdx.length>0)) {
 			if (i < _trailList.length) {
 				trailId = _trailList[i]._id
 				thisTrail = _trailList[i].title;
@@ -798,4 +778,24 @@ export async function genCmntSubmitBtn_click(event) {
 			console.log("submitBtn_click caught error submit to SkiGroomComment " + err)
 		}
 	}
+}
+
+export function trailCondxDrpDn_change(event) {
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here: 
+	let tblrws = $w('#trailCondxTbl').rows;
+	let newelt = $w('#trailCondxDrpDn').value;
+	if (newelt.length>2)
+		tblrws.push({'trail_conditions': newelt});	
+	console.log("trailCondxDrpDn_change: newelt: "+newelt+"; newelt type: "+typeof(newelt));
+	$w('#trailCondxTbl').rows = tblrws;
+	if ($w('#trailCondxTbl').rows.length>0){
+		_setElmntsChng("Condx",true);
+	}
+	else {
+		_setElmntsChng("Condx",false);
+	}
+	_trailDataSubmit = 1;
+	// console.log("trailCondxDrpDn setting Condx " + _getElmntsChng("Condx"))
+	checkSubmit();
 }
