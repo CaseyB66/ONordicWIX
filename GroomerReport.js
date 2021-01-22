@@ -315,14 +315,22 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			hour: '2-digit',
 			minute: '2-digit'
 		};
+		let mxHrs=-36*3600
+		let ii=0
+		for (ii=0;ii<dateColorDefn.length-1;ii++){
+			if (mxHrs<dateColorDefn[ii].hrs){
+				mxHrs=dateColorDefn[ii].hrs
+			}
+		}
 
 		try {
 			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
 			if (tblCmnt.length>0){
 				let tdiff=Math.abs(lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime())
 				console.log("_skiGroomCommentHTML found lstRprtDate: "+lstRprtDate.toString()+" with groomDate "+tblCmnt[0]["groomDate"].toString())
-				console.log("_skiGroomCommentHTML found query result: "+tblCmnt.length+" with tdiff "+tdiff)
-				if (tdiff < 21600000) {   // 6 hours = 6 x 3600
+				console.log("_skiGroomCommentHTML found query result: "+tblCmnt.length+" with tdiff "+tdiff+"; cutoff "+mxHrs*3600000)
+				// 19176724
+				if (tdiff < mxHrs*3600000) {   // 6 hours = 6 x 3600
 					let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 					console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
 					let cmntlgth = tblCmnt[0]["title"].length;
@@ -349,6 +357,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 
 	this._skiGroomCommentTableQuery = async (trType) => {
 		try {
+			console.log("skiGroomCommentTableQuery fltrDate "+fltrDate.toDateString());
 			const results = await wixData.query("skiGroomCommentTable")
 				.include("groomerRef")
 				.limit(100)
