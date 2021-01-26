@@ -88,7 +88,7 @@ $w.onReady(function () {
 	fillTrailRgnDrpDn();
 	fillTrailConditionDropDn();
 	fillGroomersDrpDn();
-	$w('#genCmntEdit').maxLength=192;
+	$w('#genCmntEdit').maxLength=256;
 	$w('#genCmntSubmitBtn').enable();
 
 	$w('#removeTrailCondxBtn').disable();

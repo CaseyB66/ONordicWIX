@@ -315,7 +315,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			hour: '2-digit',
 			minute: '2-digit'
 		};
-		let mxHrs=(mxHrs<dateColorDefn[0].hrs+mxHrs<dateColorDefn[1].hrs)/2
+		let mxHrs=(dateColorDefn[0].hrs+dateColorDefn[1].hrs)/2
 
 		try {
 			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
