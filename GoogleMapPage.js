@@ -29,7 +29,7 @@ $w.onReady(function () {
     $w("#colorCodesHover").show();
 
 
-	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' }]
+	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' } ]
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w("#googleMapHTML").onMessage((event)=>{
 
@@ -54,7 +54,7 @@ async function queryGroomReportTable(){
     _grmRpt = new groomReportTable("All", 64800, 1);
 	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
 
-    let newRws = await _grmRpt._skiGroomingTableQuery(trType);
+    let newRws = await _grmRpt._skiGroomingTableQueryDsply(trType);
     _groomTableData = newRws.sort(function (a, b) {
         var rgnA = a.region.toUpperCase();
         var rgnB = b.region.toUpperCase();
