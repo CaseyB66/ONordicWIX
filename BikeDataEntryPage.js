@@ -155,22 +155,22 @@ $w.onReady(function () {
 
 function hideTrailLabels(){
 	for (var i=__fstEntryRow-1;i<__nrEntryRows;i++){
-		let tmpStr=('#trGrp'+(i+1));
-		// console.log("hideTrailLabels "+tmpStr)
-		$w(tmpStr).hide();
+		let trlStr = ('#trailLabel'+(i+1));
+		let grmMchStr = ('#grmMachRadio'+(i+1))
+		$w(trlStr).hide();
+		$w(grmMchStr).hide();
 	}
 }
 
 function setTrailLabel(trStr,trNbr){
-	let tmpStr = ('#trGrp'+trNbr);
-	console.log("setTrailLabel "+trStr+", trNbr: "+trNbr+", eval "+tmpStr)
-	$w(tmpStr).show();
-	tmpStr = ('#trailLabel'+trNbr);
-	let trlOpts=$w(tmpStr).options;
+	let trlStr = ('#trailLabel'+trNbr);
+	let grmMchStr = ('#grmMachRadio'+trNbr)
+	$w(trlStr).show();
+	$w(grmMchStr).show();
+	let trlOpts=$w(trlStr).options;
 	trlOpts[0].label=trStr;
-	$w(tmpStr).options=trlOpts;
-	$w(tmpStr).selectedIndices=[0];
-
+	$w(trlStr).options=trlOpts;
+	$w(trlStr).selectedIndices=[0];
 }
 
 function enableEntryFields(_boolVal){
@@ -276,12 +276,12 @@ function setGrmMachRadio(vlu,trNbr){
 
 export function checkTrailsDoneAgainstMatrix(){
 	let trlStr="";
-	let grpStr="";
+	let grmMchStr = ""
 	let j=0; let k=0;
 	let fldsSet=0;
 	for (k = __fstEntryRow; k < __nrEntryRows; k++) {
 		trlStr = ('#trailLabel'+(k+1));
-		grpStr = ('#trGrp' + (k + 1));
+		grmMchStr = ('#grmMachRadio'+(k+1))
 		let trlNdx=$w(trlStr).selectedIndices;
 		let trlOpts=$w(trlStr).options;
 		let trlfnd=false;
@@ -645,7 +645,6 @@ export async function submitBtn_click(event) {
 	let toInsert = {}
 	
 	_saveTime = $w('#trailGroomTime').value;
-	let grpStr=""
 	let trlStr=""
 	let grmrRd=""
 	let thisTrail=""
@@ -653,11 +652,10 @@ export async function submitBtn_click(event) {
 	let grmRpt = new groomReportTable("All", 64800, 1);
 	for (var i = __fstEntryRow-1; i < __nrEntryRows; i++) {
 		trlStr = ('#trailLabel'+(i+1));
-		grpStr = ('#trGrp' + (i + 1));
 		let trlNdx=$w(trlStr).selectedIndices;
-		console.log("submitBtn: trlStr "+trlStr+"; grpStr "+grpStr+"; trlNdx "+trlNdx.length+"; fstNdx "+trlNdx[0])
+		console.log("submitBtn: trlStr "+trlStr+"; trlNdx "+trlNdx.length+"; fstNdx "+trlNdx[0])
 		trlLstNdx=(i-(__fstEntryRow-1));
-		if (!$w(grpStr).hidden && (trlNdx.length>0)) {
+		if (!$w(trlStr).hidden && (trlNdx.length>0)) {
 			if (trlLstNdx < _trailList.length) {
 				trailId = _trailList[trlLstNdx]._id
 				thisTrail = _trailList[trlLstNdx].title;
@@ -741,11 +739,10 @@ export function groomMachineRadio_change(event) {
 export function groomMachRadioALL_change(event) {
 	let curVal=$w('#groomMachRadioALL').value;
 	for (var i=__fstEntryRow-1;i<__nrEntryRows;i++){
-		let grpStr=('#trGrp'+(i+1));
-		if (!$w(grpStr).hidden){
-			let tmpStr = ('#grmMachRadio'+(i+1));
-			console.log("groomMachRadioALL_change setting "+tmpStr+", to: "+curVal)
-			$w(tmpStr).value=curVal;
+		let grmMachStr = ('#grmMachRadio'+(i+1));
+		if (!$w(grmMachStr).hidden){
+			console.log("groomMachRadioALL_change setting "+grmMachStr+", to: "+curVal)
+			$w(grmMachStr).value=curVal;
 		}
 	}
 }

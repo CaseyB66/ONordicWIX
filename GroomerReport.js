@@ -335,7 +335,8 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 						cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
 						border-radius: 8px;padding: 10px;font-size:12px">';
 					}
-					cmnthtml = cmnthtml.concat(timStr + ": ");
+					cmnthtml = cmnthtml.concat(timStr);
+					cmnthtml = cmnthtml.concat("<b> ("+trType.toUpperCase()+"): </b>")
 					cmnthtml = cmnthtml.concat(tblCmnt[0]["title"])
 					cmnthtml = cmnthtml.concat("</p>")
 				} else {
