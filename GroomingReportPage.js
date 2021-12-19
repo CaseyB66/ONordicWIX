@@ -20,6 +20,7 @@ $w.onReady(function () {
 		{ label: "4 Hours", value: "4" }
 	];
 	$w('#grmRptHours').options = hoursopts;
+	$w('#grmRptHours').selectedIndex = 2;
 	let tdy = new Date();
 	let dateTxt = tdy.toDateString();
 	let htmltxt = '<div style="font-size:18px;">' + dateTxt + '</div>'
@@ -61,6 +62,7 @@ function fillTrailRgnDrpDn() {
 			rgnsOpts.push({ label: "All", value: "All" })
 			$w('#grmRptTrailRgnDrpDn').options = rgnsOpts;
 			$w('#grmRptTrailRgnDrpDn').selectedIndex = rgnsOpts.length - 1;
+			console.log("fillTrailRgnDrpDn for trail type "+trType+"; found " + rgnsOpts.length+' regions')
 			fillGrmRptTbl();
 		})
 }
@@ -79,6 +81,7 @@ function buildOptions(uniqueList) {
 
 export function grmRptTrailRgnDrpDn_change(event) {
 	let vlu = $w('#grmRptTrailRgnDrpDn').value.toString();
+	console.log('grmRptTrailRgnDrpDn_change found Region '+vlu)
 	fillGrmRptTbl();
 }
 

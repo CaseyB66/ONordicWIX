@@ -86,7 +86,7 @@ $w.onReady(function () {
 		timestr="0"+today.getHours();
 	}
 	else {
-		timestr = today.getHours();
+		timestr = ""+today.getHours();
 	}
 	if (today.getMinutes()<10){
 		timestr +=":0"+today.getMinutes();
@@ -300,7 +300,7 @@ export function checkTrailsDoneAgainstMatrix(){
 			$w('#trailCondxTbl').rows=newTblRws;
 		}
 	let dtoptions = {
-		hour: '2-digit', minute: '2-digit',
+		hour: 'numeric', minute: 'numeric',
 		hour12: false
 	};		
 	
@@ -346,6 +346,7 @@ export function groomerPwdEdit_change(event) {
 
 async function fillGroomersDrpDn(){
 	try {
+		$w('#groomersDrpDn').value=null;
 		const results = await wixData.query("groomersTable")
 		.limit(20)
 		.eq("trailType","ski")
@@ -370,6 +371,7 @@ async function fillGroomersDrpDn(){
 }
 
 function fillTrailRgnDrpDn(){
+	$w('#trailRgnDrpDn').value=null;
 	wixData.query("skiTrailsTable")
 	.limit(20)
 	.gt("reportPriority",-1)
@@ -396,19 +398,21 @@ function fillTrailRgnDrpDn(){
 }
 
 function fillTrailConditionDropDn(){
-		wixData.query("trailCondxTable")
-			.limit(50)
-			.eq("trailType","ski")
-			.or(wixData.query("trailCondxTable").eq("trailType","both"))
-			.ascending("condxSort")
-			.find()
-			.then(results => {
-				const uniqueTitles = getUniqueTrailCondx(results.items);
-				let condxOpts = buildOptions(uniqueTitles);
-				$w('#trailCondxDrpDn').options = condxOpts;
-				$w('#trailCondxDrpDn').selectedIndex=0;
-				trailCondxDrpDn_change(null)
-			});
+	$w('#trailCondxDrpDn').value=null;
+	wixData.query("trailCondxTable")
+		.limit(50)
+		.eq("trailType","ski")
+		.or(wixData.query("trailCondxTable").eq("trailType","both"))
+		.ascending("condxSort")
+		.find()
+		.then(results => {
+			const uniqueTitles = getUniqueTrailCondx(results.items);
+			let condxOpts = buildOptions(uniqueTitles);
+			$w('#trailCondxDrpDn').options = condxOpts;
+			// $w('#trailCondxDrpDn').selectedIndex=condxOpts.length-1;
+			$w('#trailCondxTbl').rows=[]
+			// trailCondxDrpDn_change(null)
+		});
 }
 
 async function fillTrailNameDrpDn(rgn) {
