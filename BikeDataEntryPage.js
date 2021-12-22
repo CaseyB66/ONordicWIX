@@ -102,7 +102,7 @@ $w.onReady(function () {
 		timestr="0"+today.getHours();
 	}
 	else {
-		timestr = today.getHours();
+		timestr = ""+today.getHours();
 	}
 	if (today.getMinutes()<10){
 		timestr +=":0"+today.getMinutes();
@@ -128,6 +128,9 @@ $w.onReady(function () {
 	}
 	$w('#trailRgnDrpDn').disable();
 	$w('#groomerPwdEdit').disable();
+	$w('#pwdEnterBtn').disable();
+	$w('#pwdEnterBtn').label="Enter";
+	
 	clearEntryFields();
 
 	// $w('#skiGroomDataset2').
@@ -147,10 +150,6 @@ $w.onReady(function () {
 			"; vis " + trlsDnCols[i].visible)
 	}
 	$w('#trailsDoneTbl').columns = trlsDnCols;
-	let logerrhtml = '<div style="font-size:18px;background-color:rgb(230,200,200);color:rgb(0,0,0);border: 2px solid red;\
-  border-radius: 8px;padding: 10px;">';	
-	$w('#loginErrorText').html=logerrhtml.concat('Incorrect password, try again!</div>');
-	$w('#loginErrorText').hide();
 });
 
 function hideTrailLabels(){
@@ -215,8 +214,11 @@ export function groomersDrpDn_change(event) {
 		}
 	}
 	console.log('groomerDrpDn value '+$w('#groomersDrpDn').value + ' pwd '+chkPwd)
+	$w('#pwdEnterBtn').label="Enter";
+	$w('#pwdEnterBtn').enable();
 	$w('#groomerPwdEdit').enable();
 	$w("#groomerPwdEdit").inputType = "password";
+	$w('#groomerPwdEdit').focus();
 }
 
 async function fillTrailsDoneTbl(){
@@ -327,20 +329,29 @@ export function checkTrailsDoneAgainstMatrix(){
 
 }
 
-
-export function groomerPwdEdit_change(event) {
+/**
+*	Adds an event handler that runs when the element is clicked.
+	[Read more](https://www.wix.com/corvid/reference/$w.ClickableMixin.html#onClick)
+*	 @param {$w.MouseEvent} event
+*/
+export function pwdEnterBtn_click(event) {
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here: 
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here: 
 	var chkPwd="";
 	for (var i=0;i<_groomerList.length;i++){
 		if (_groomerList[i].title===$w('#groomersDrpDn').value){
 			chkPwd = _groomerList[i].passWord;
 		}
 	}
-	console.log('groomerPwdEdit value '+$w('#groomersDrpDn').value + ' pwd '+chkPwd)
+	// console.log('groomerPwdEdit value '+$w('#groomersDrpDn').value + ' pwd '+chkPwd)
 	if ($w('#groomerPwdEdit').value===chkPwd){
-		$w('#trailRgnDrpDn').disable();
+		$w('#trailRgnDrpDn').enable();
 		$w('#groomerPwdEdit').hide();
-
-		fillTrailsDoneTbl();
+		$w('#pwdEnterBtn').hide();
+		
+		fillTrailsDoneTbl(true);
 		trailRgnDrpDn_change(null);
 		$w('#groomersDrpDn').disable().then( () => {
 			$w("#groomersDrpDn").style.backgroundColor = "rgb(255,0,0)";
@@ -349,8 +360,25 @@ export function groomerPwdEdit_change(event) {
 		// $w('#groomersDrpDn').disable();
 	} else {
 		console.log("groomerPwdEdit showing login error")
-		$w('#loginErrorText').show();
+		$w('#pwdEnterBtn').label="ERROR: Try again";
 	}
+
+}
+
+/**
+*	Adds an event handler that runs when the element receives focus.
+	[Read more](https://www.wix.com/corvid/reference/$w.FocusMixin.html#onFocus)
+*	 @param {$w.Event} event
+*/
+export function groomerPwdEdit_focus(event) {
+	// This function was added from the Properties & Events panel. To learn more, visit http://wix.to/UcBnC-4
+	// Add your code for this event here:
+	$w('#pwdEnterBtn').label="Enter";
+
+}
+
+export function groomerPwdEdit_change(event) {
+	pwdEnterBtn_click(event);
 }
 
 async function fillGroomersDrpDn(){
@@ -747,16 +775,6 @@ export function groomMachRadioALL_change(event) {
 	}
 }
 
-export function loginErrorText_click(event) {
-
-}
-
-export function loginErrorText_click_1(event) {
-	if ($w('#loginErrorText').isVisible){
-		$w('#loginErrorText').hide();
-	}
-}
-
 export async function genCmntEdit_blur(event) {
 }
 
@@ -802,3 +820,4 @@ export async function genCmntSubmitBtn_click(event) {
 		}
 	}
 }
+
