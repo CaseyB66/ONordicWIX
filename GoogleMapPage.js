@@ -225,6 +225,7 @@ async function fillTrailNameDrpDn(rgn){
 		try {
 			const results = await wixData.query("skiTrailsTable")
 				.eq("trailType",trType)
+                .ne("trailRegion",'Yurts')
                 .gt("reportPriority",-1)
 				.ascending("viewSort")
 				.find();
