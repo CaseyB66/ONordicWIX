@@ -15,9 +15,9 @@ export function getTrailColor(trct){
 	return clrs[clrNdx];
 }
 
-const colorGreen = "rgb(0,250,154)";
+const colorGreen = "rgb(50,200,25)";
 const colorRed = "rgb(250,80,72)";
-const colorYellow = "rgb(238,232,170)";
+const colorYellow = "rgb(155,155,5)";
 
 export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 	// rprtType can be 0 for "Brief", 1 for "All Trails", 3 for "Full"
