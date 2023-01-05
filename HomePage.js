@@ -20,33 +20,33 @@ async function fillGroomRpt(){
 	grmRptClass.setSmallTable(true);
 	var tblhtml=await grmRptClass.fillGrmRptTbl("ski");
 	// console.log("fillGrmRptTbl html: "+tblhtml)
+	cmntHtml=await grmRptClass._skiGroomCommentHTML("ski");
+	if (cmntHtml.length>0){
+		console.log("fillGrmRptTbl cmnthtml: "+cmntHtml)
+		$w('#genCmntText').html=cmntHtml;
+		$w('#genCmntText').show();
+	} else {
+		$w('#genCmntText').html="";
+		$w('#genCmntText').hide();
+	}
 	if (tblhtml.length>1){
 		$w('#skiGrmRpt').html = tblhtml;
-		cmntHtml=await grmRptClass._skiGroomCommentHTML("ski");
-		if (cmntHtml.length>0){
-			console.log("fillGrmRptTbl cmnthtml: "+cmntHtml)
-			$w('#genCmntText').html=cmntHtml;
-			$w('#genCmntText').show();
-		} else {
-			$w('#genCmntText').html="";
-			$w('#genCmntText').hide();
-		}
 	}
 
 	tblhtml=await grmRptClass.fillGrmRptTbl("bike");
+	cmntHtml=await grmRptClass._skiGroomCommentHTML("bike");
+	if (cmntHtml.length>0){
+		console.log("fillGrmRptTbl cmnthtml: "+cmntHtml)
+		$w('#genBikeCmnt').html=cmntHtml;
+		$w('#genBikeCmnt').show();
+	} else {
+		$w('#genBikeCmnt').html="";
+		$w('#genBikeCmnt').hide();
+	}
 	// console.log("fillGrmRptTbl html: "+tblhtml)
 	if (tblhtml.length>1)
 	{
 		$w('#bikeGrmRpt').html = tblhtml;
-		cmntHtml=await grmRptClass._skiGroomCommentHTML("bike");
-		if (cmntHtml.length>0){
-			console.log("fillGrmRptTbl cmnthtml: "+cmntHtml)
-			$w('#genBikeCmnt').html=cmntHtml;
-			$w('#genBikeCmnt').show();
-		} else {
-			$w('#genBikeCmnt').html="";
-			$w('#genBikeCmnt').hide();
-		}
 
 	} else {
 
