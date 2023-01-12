@@ -315,16 +315,17 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			hour: '2-digit',
 			minute: '2-digit'
 		};
-		let mxHrs=(dateColorDefn[1].hrs)*2
+		let mxHrs=(dateColorDefn[1].hrs)*14
 
 		try {
 			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
 			if (tblCmnt.length>0){
 				let tdiff=Math.abs(lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime())/60000
+				let txtLgth = tblCmnt[0].title.length
 				console.log("_skiGroomCommentHTML found lstRprtDate: "+lstRprtDate.toString()+" with groomDate "+tblCmnt[0]["groomDate"].toString())
-				console.log("_skiGroomCommentHTML found query result: "+tblCmnt.length+" with tdiff "+tdiff+"; cutoff "+mxHrs*60)
+				console.log("_skiGroomCommentHTML found query result length: "+tblCmnt.length+" (text "+txtLgth+") with tdiff "+tdiff+"; cutoff "+mxHrs*60)
 				// 19176724
-				if (tdiff < mxHrs*60) {   // 6 hours = 6 x 3600
+				if ((tdiff < mxHrs*60) && (txtLgth>8)) {   // 6 hours = 6 x 3600
 					let timStr = tblCmnt[0]["groomDate"].toLocaleDateString("en-US", dateStrOpts);
 					console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
 					let cmntlgth = tblCmnt[0]["title"].length;
