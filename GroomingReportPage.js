@@ -20,17 +20,17 @@ $w.onReady(function () {
 		{ label: "4 Hours", value: "4" }
 	];
 	$w('#grmRptHours').options = hoursopts;
-	$w('#grmRptHours').selectedIndex = 2;
+	$w('#grmRptHours').selectedIndex = 3;
 	let tdy = new Date();
 	let dateTxt = tdy.toDateString();
-	let htmltxt = '<div style="font-size:18px;">' + dateTxt + '</div>'
+	let htmltxt = '<div style="font-size:18px;color:rgb(255,255,255)">' + dateTxt + '</div>'
 	$w('#grmRptDateTxt').html = htmltxt;
 	$w('#reportOptionsRadio').options = [{ label: "All Trails", value: '1' }, { label: "Full", value: '2' }]
 	$w('#reportOptionsRadio').selectedIndex = 0;
 	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' }]
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w('#grmRptTable').html = "";
-    htmltxt = '<div style="background-color:rgb(100,200,0);font-size:14px;text-align:center">';
+    htmltxt = '<div style="background-color:rgb(255,255,51);font-size:14px;text-align:center">';
     htmltxt=htmltxt.concat('All Trails: show latest groom date and classic tracks for all trails within the Time Period');
     htmltxt=htmltxt.concat('<br>Full: show all information for all dates in chosen Time Period</div>');
 	$w('#reportOptionsHelp').html=htmltxt;
@@ -129,7 +129,7 @@ export function reportOptionsRadio_change(event) {
 
 export function trailTypeRadio_change(event) {
 	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
-    let htmlText = '<div style="background-color:rgb(100,200,0);font-size:14px;text-align:center">';
+    let htmlText = '<div style="background-color:rgb(255,255,51);font-size:14px;text-align:center">';
 	if (trType.toLowerCase()==='ski'){
 		htmlText=htmlText.concat('All Trails: show latest groom date and classic tracks for all trails within the Time Period');
 	} else {

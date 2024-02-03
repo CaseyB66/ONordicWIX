@@ -321,6 +321,7 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 			var tblCmnt=await this._skiGroomCommentTableQuery(trType);
 			if (tblCmnt.length>0){
 				let tdiff=Math.abs(lstRprtDate.getTime() - tblCmnt[0]["groomDate"].getTime())/60000
+				var rowClr=this.getDateColor(tblCmnt[0]["groomDate"]);
 				let txtLgth = tblCmnt[0].title.length
 				console.log("_skiGroomCommentHTML found lstRprtDate: "+lstRprtDate.toString()+" with groomDate "+tblCmnt[0]["groomDate"].toString())
 				console.log("_skiGroomCommentHTML found query result length: "+tblCmnt.length+" (text "+txtLgth+") with tdiff "+tdiff+"; cutoff "+mxHrs*60)
@@ -330,10 +331,10 @@ export function groomReportTable (rgn = "South", hrs = 24, rprtTyp = 0) {
 					console.log("_skiGroomCommentHTML found comment: " + tblCmnt[0].title)
 					let cmntlgth = tblCmnt[0]["title"].length;
 					if (cmntlgth<108){
-						cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+						cmnthtml = '<p style="background-color:' + rowClr.color + ';color:rgb(0,0,0);border: 2px solid green;\
 						border-radius: 8px;padding: 10px;font-size:16px">';
 					} else {
-						cmnthtml = '<p style="background-color:rgb(255,255,255);color:rgb(0,0,0);border: 2px solid green;\
+						cmnthtml = '<p style="background-color:' + rowClr.color + ';color:rgb(0,0,0);border: 2px solid green;\
 						border-radius: 8px;padding: 10px;font-size:12px">';
 					}
 					cmnthtml = cmnthtml.concat(timStr);
