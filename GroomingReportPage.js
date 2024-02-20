@@ -10,14 +10,14 @@ $w.onReady(function () {
 	$w('#genCmntText').hide();
 
 	fillTrailRgnDrpDn();
-	let hoursopts = [{ label: "1  Month", value: "720" },{ label: "1 Week", value: "168" },
-		{ label: "48 Hours", value: "48" },
-		{ label: "36 Hours", value: "36" },
-		{ label: "24 Hours", value: "24" },
-		{ label: "18 Hours", value: "18" },
-		{ label: "12 Hours", value: "12" },
-		{ label: "8 Hours", value: "8" },
-		{ label: "4 Hours", value: "4" }
+	let hoursopts = [{ label: "1  Month", value: '720' },{ label: "1 Week", value: '168' },
+		{ label: "48 Hours", value: '48' },
+		{ label: "36 Hours", value: '36' },
+		{ label: "24 Hours", value: '24' },
+		{ label: "18 Hours", value: '18' },
+		{ label: "12 Hours", value: '12' },
+		{ label: "8 Hours", value: '8' },
+		{ label: "4 Hours", value: '4' }
 	];
 	$w('#grmRptHours').options = hoursopts;
 	$w('#grmRptHours').selectedIndex = 3;
@@ -25,14 +25,14 @@ $w.onReady(function () {
 	let dateTxt = tdy.toDateString();
 	let htmltxt = '<div style="font-size:18px;color:rgb(255,255,255)">' + dateTxt + '</div>'
 	$w('#grmRptDateTxt').html = htmltxt;
-	$w('#reportOptionsRadio').options = [{ label: "All Trails", value: '1' }, { label: "Full", value: '2' }]
+	$w('#reportOptionsRadio').options = [{ label: "Summary", value: '1' }, { label: "Full", value: '2' }]
 	$w('#reportOptionsRadio').selectedIndex = 0;
 	$w('#trailTypeRadio').options = [{ label: "Ski", value: 'ski' }, { label: "Snowshoe or Bike", value: 'bike' }]
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w('#grmRptTable').html = "";
     htmltxt = '<div style="background-color:rgb(255,255,51);font-size:14px;text-align:center">';
-    htmltxt=htmltxt.concat('All Trails: show latest groom date and classic tracks for all trails within the Time Period');
-    htmltxt=htmltxt.concat('<br>Full: show all information for all dates in chosen Time Period</div>');
+    htmltxt=htmltxt.concat('Summary: show grooming date(s) and classic tracks within the Time Period');
+    htmltxt=htmltxt.concat('<br>Full: show all grooming information within Time Period</div>');
 	$w('#reportOptionsHelp').html=htmltxt;
 	$w('#reportOptionsHelp').hide();
 
@@ -99,7 +99,8 @@ async function fillGrmRptTbl() {
 	let timStr = ""
 	// rgn = "South", hrs = 24, rprtTyp = 0
 	let ndx = Number($w('#reportOptionsRadio').options[$w('#reportOptionsRadio').selectedIndex].value);
-	let grmRptClass = new groomReportTable(rptrgn, $w('#grmRptHours').value, ndx);
+	let hrs = Number($w('#grmRptHours').value);
+	let grmRptClass = new groomReportTable(rptrgn, hrs, ndx);
 	var tblhtml=await grmRptClass.fillGrmRptTbl(trType);
 	// console.log("fillGrmRptTbl html: "+tblhtml)
 	if (tblhtml.length>1)
@@ -131,11 +132,11 @@ export function trailTypeRadio_change(event) {
 	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
     let htmlText = '<div style="background-color:rgb(255,255,51);font-size:14px;text-align:center">';
 	if (trType.toLowerCase()==='ski'){
-		htmlText=htmlText.concat('All Trails: show latest groom date and classic tracks for all trails within the Time Period');
+		htmlText=htmlText.concat('Summary: show grooming date(s) and classic tracks within the Time Period');
 	} else {
-		htmlText=htmlText.concat('All Trails: show latest groom date for all trails within the Time Period');
+		htmlText=htmlText.concat('Summary: show grooming date(s) within the Time Period');
 	}
-	htmlText=htmlText.concat('<br>Full: show all information for all dates in chosen Time Period</div>');
+	htmlText=htmlText.concat('<br>Full: show all grooming information within the Time Period</div>');
 	$w('#reportOptionsHelp').html=htmlText;
 	fillTrailRgnDrpDn();
 	fillGrmRptTbl()
