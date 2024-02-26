@@ -10,14 +10,14 @@ $w.onReady(function () {
 	$w('#genCmntText').hide();
 
 	fillTrailRgnDrpDn();
-	let hoursopts = [{ label: "1  Month", value: '720' },{ label: "1 Week", value: '168' },
-		{ label: "48 Hours", value: '48' },
-		{ label: "36 Hours", value: '36' },
-		{ label: "24 Hours", value: '24' },
-		{ label: "18 Hours", value: '18' },
-		{ label: "12 Hours", value: '12' },
-		{ label: "8 Hours", value: '8' },
-		{ label: "4 Hours", value: '4' }
+	let hoursopts = [{ label: "1  Month", value: "720" },{ label: "1 Week", value: "168" },
+		{ label: "48 Hours", value: "48" },
+		{ label: "36 Hours", value: "36" },
+		{ label: "24 Hours", value: "24" },
+		{ label: "18 Hours", value: "18" },
+		{ label: "12 Hours", value: "12" },
+		{ label: "8 Hours", value: "8" },
+		{ label: "4 Hours", value: "4" }
 	];
 	$w('#grmRptHours').options = hoursopts;
 	$w('#grmRptHours').selectedIndex = 3;
@@ -31,7 +31,7 @@ $w.onReady(function () {
 	$w('#trailTypeRadio').selectedIndex = 0;
 	$w('#grmRptTable').html = "";
     htmltxt = '<div style="background-color:rgb(255,255,51);font-size:14px;text-align:center">';
-    htmltxt=htmltxt.concat('Summary: show grooming date(s) and classic tracks within the Time Period');
+    htmltxt=htmltxt.concat('Summary: show most recent grooming date and classic tracks within the Time Period');
     htmltxt=htmltxt.concat('<br>Full: show all grooming information within Time Period</div>');
 	$w('#reportOptionsHelp').html=htmltxt;
 	$w('#reportOptionsHelp').hide();
@@ -132,9 +132,9 @@ export function trailTypeRadio_change(event) {
 	const trType = $w('#trailTypeRadio').options[$w('#trailTypeRadio').selectedIndex]['value'];
     let htmlText = '<div style="background-color:rgb(255,255,51);font-size:14px;text-align:center">';
 	if (trType.toLowerCase()==='ski'){
-		htmlText=htmlText.concat('Summary: show grooming date(s) and classic tracks within the Time Period');
+		htmlText=htmlText.concat('Summary: show most recent grooming date and classic tracks within the Time Period');
 	} else {
-		htmlText=htmlText.concat('Summary: show grooming date(s) within the Time Period');
+		htmlText=htmlText.concat('Summary: show most recent grooming date within the Time Period');
 	}
 	htmlText=htmlText.concat('<br>Full: show all grooming information within the Time Period</div>');
 	$w('#reportOptionsHelp').html=htmlText;
